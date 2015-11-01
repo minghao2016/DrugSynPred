@@ -1,0 +1,86 @@
+"Sanger.Name","CCLE.Name","Alternative.Name","Disease.Area","Tissue..General.","COSMIC"
+"22RV1","22RV1_PROSTATE","22RV1","Urology","male genital system",924100
+"647-V","647V_URINARY_TRACT","647V","Urology","urinary tract",906797
+"A549","A549_LUNG","A549","Lung","lung",905949
+"BFTC-905","BFTC905_URINARY_TRACT","BFTC905","Urology","urinary tract",910926
+"BT-20","BT20_BREAST","BT20","Breast","breast",906801
+"BT-474","BT474_BREAST","BT474","Breast","breast",946359
+"BT-549","BT549_BREAST","BT549","Breast","breast",905951
+"C32","C32_SKIN","C32MELANOMA","Niche","soft tissue",906830
+"CAL-120","CAL120_BREAST","CAL120","Breast","breast",906826
+"CAL-148","CAL148_BREAST","CAL148","Breast","breast",924106
+"CAL-51","CAL51_BREAST","CAL51","Breast","breast",910927
+"Calu-3","CALU3_LUNG","CALU3","Lung","lung",687777
+"Calu-6","CALU6_LUNG","CALU6","Lung","lung",724859
+"CAMA-1","CAMA1_BREAST","CAMA1","Breast","breast",946382
+"COLO-205","COLO205_LARGE_INTESTINE","COLO205","GI","gastrointestinal tract (lower)",905961
+"DMS-114","DMS114_LUNG","DMS114","Lung","lung",687983
+"DU-4475","DU4475_BREAST","DU4475","Breast","breast",906844
+"EVSA-T","EVSAT_BREAST","EVSAT","Breast","breast",906862
+"HCC1143","HCC1143_BREAST","HCC1143","Breast","breast",749710
+"HCC1187","HCC1187_BREAST","HCC1187","Breast","breast",749711
+"HCC1395","HCC1395_BREAST","HCC1395","Breast","breast",749712
+"HCC1419","HCC1419_BREAST","HCC1419","Breast","breast",907045
+"HCC1428","HCC1428_BREAST","HCC1428","Breast","breast",1290905
+"HCC1500","HCC1500_BREAST","HCC1500","Breast","breast",1303900
+"HCC1569","HCC1569_BREAST","HCC1569","Breast","breast",907046
+"HCC1806","HCC1806_BREAST","HCC1806","Breast","breast",907047
+"HCC1937","HCC1937_BREAST","HCC1937","Breast","breast",749714
+"HCC1954","HCC1954_BREAST","HCC1954","Breast","breast",749709
+"HCC38","HCC38_BREAST","HCC38","Breast","breast",749717
+"HCC70","HCC70_BREAST","HCC70","Breast","breast",907048
+"HCT-116","HCT116_LARGE_INTESTINE","HCT116","GI","gastrointestinal tract (lower)",905936
+"Hs-578-T","HS578T_BREAST","HS578T","Breast","breast",905957
+"HT-1197","HT1197_URINARY_TRACT","HT1197","Urology","urinary tract",907065
+"HT-1376","HT1376_URINARY_TRACT","HT1376","Urology","urinary tract",907066
+"HT-29","HT29_LARGE_INTESTINE","HT29","GI","gastrointestinal tract (lower)",905939
+"J82","J82_URINARY_TRACT","J82","Urology","urinary tract",753566
+"KATOIII","KATOIII_STOMACH","KATOIII","GI","gastrointestinal tract (upper)",907276
+"KMS-11","KMS11_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE","KMS11","Haems","blood/lymph",1659817
+"KU-19-19","KU1919_URINARY_TRACT","KU1919","Urology","urinary tract",907312
+"LS-513","LS513_LARGE_INTESTINE","LS513","GI","gastrointestinal tract (lower)",907795
+"M14","","M14","Niche","soft tissue",905975
+"MCF7","MCF7_BREAST","MCF7","Breast","breast",905946
+"MDA-MB-157","MDAMB157_BREAST","MDAMB157","Breast","breast",925338
+"MDA-MB-175-VII","MDAMB175VII_BREAST","MDAMB175VII","Breast","breast",908120
+"MDA-MB-231","MDAMB231_BREAST","MDAMB231","Breast","breast",905960
+"MDA-MB-361","MDAMB361_BREAST","MDAMB361","Breast","breast",908121
+"MDA-MB-415","MDAMB415_BREAST","MDAMB415","Breast","breast",924240
+"MDA-MB-436","MDAMB436_BREAST","MDAMB436","Breast","breast",1240172
+"MDA-MB-453","MDAMB453_BREAST","MDAMB453","Breast","breast",908122
+"MDA-MB-468","MDAMB468_BREAST","MDAMB468","Breast","breast",908123
+"MFM-223","","MFM223","Breast","breast",910948
+"NCI-H1299","NCIH1299_LUNG","NCIH1299","Lung","lung",724831
+"NCI-H1437","NCIH1437_LUNG","NCIH1437","Lung","lung",687794
+"NCI-H1563","NCIH1563_LUNG","NCIH1563","Lung","lung",753600
+"NCI-H1703","NCIH1703_LUNG","NCIH1703","Lung","lung",908474
+"NCI-H1793","NCIH1793_LUNG","NCIH1793","Lung","lung",908463
+"NCI-H1975","NCIH1975_LUNG","NCIH1975","Lung","lung",924244
+"NCI-H2085","NCIH2085_LUNG","NCIH2085","Lung","lung",687812
+"NCI-H2170","NCIH2170_LUNG","NCIH2170","Lung","lung",687815
+"NCI-H2228","NCIH2228_LUNG","NCIH2228","Lung","lung",687816
+"NCI-H226","NCIH226_LUNG","NCIH226","Lung","lung",905941
+"NCI-H2291","NCIH2291_LUNG","NCIH2291","Lung","lung",724874
+"NCI-H23","NCIH23_LUNG","NCIH23","Lung","lung",905942
+"NCI-H3122","","NCIH3122","Lung","lung",1240190
+"NCI-H358","NCIH358_LUNG","NCIH358","Lung","lung",908465
+"NCI-H520","NCIH520_LUNG","NCIH520","Lung","lung",908443
+"NCI-H522","NCIH522_LUNG","NCIH522","Lung","lung",905944
+"NCI-H747","NCIH747_LARGE_INTESTINE","NCIH747","GI","gastrointestinal tract (lower)",908457
+"NCI-H838","NCIH838_LUNG","NCIH838","Lung","lung",910399
+"NCI-SNU-16","SNU16_STOMACH","SNU16","GI","gastrointestinal tract (upper)",908446
+"RKO","RKO_LARGE_INTESTINE","RKO","GI","gastrointestinal tract (lower)",909698
+"RT4","RT4_URINARY_TRACT","RT4","Urology","urinary tract",687455
+"SW48","SW48_LARGE_INTESTINE","SW48","GI","gastrointestinal tract (lower)",909751
+"SW620","SW620_LARGE_INTESTINE","SW620","GI","gastrointestinal tract (lower)",905962
+"SW780","SW780_URINARY_TRACT","SW780","Urology","urinary tract",687457
+"SW837","SW837_LARGE_INTESTINE","SW837","GI","gastrointestinal tract (lower)",909755
+"SW900","SW900_LUNG","SW900","Lung","lung",724879
+"SW948","SW948_LARGE_INTESTINE","SW948","GI","gastrointestinal tract (lower)",909757
+"T-24","T24_URINARY_TRACT","T24","Urology","urinary tract",724812
+"T47D","T47D_BREAST","T47D","Breast","breast",905945
+"TCCSUP","TCCSUP_URINARY_TRACT","TCCSUP","Urology","urinary tract",687459
+"UACC-812","UACC812_BREAST","UACC812","Breast","breast",910910
+"UM-UC-3","UMUC3_URINARY_TRACT","UMUC3","Urology","urinary tract",724838
+"VCaP","VCAP_PROSTATE","VCAP","Urology","male genital system",1299075
+"VM-CUB-1","VMCUB1_URINARY_TRACT","VMCUB1","Urology","urinary tract",909780
