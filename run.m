@@ -5,20 +5,84 @@ annotations.cellLines = readtable('input/molecular/cell_info.csv', 'Delimiter', 
 annotations.drugs = readtable('input/synergy/Drugs.csv', 'Delimiter', ',');
 annotations.drugs.Target = cellfun(@(targets) strsplit(targets, ';'), annotations.drugs.Target, 'UniformOutput', false);
 
+%% Read Mono therapy
+IC50 = inf(size(annotations.cellLines, 1), size(annotations.drugs, 1));
+EMax = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
+H = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
+Max_C = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
 
-%%
-min_threshold = 100;
-tissue_names = unique(annotations.cellLines.Tissue__General_);
-annotations.groups = {};
-for i = 1:numel(tissue_names)
-    mask = strcmp( annotations.cellLines.Tissue__General_, tissue_names{i});
-    if(nnz(mask) <= min_threshold)
-        annotations.groups = [annotations.groups; {annotations.cellLines.Sanger_Name(mask)}];
-    else
+T = readtable('input/synergy/ch2_leaderBoard_monoTherapy.csv');
+[~, CL_idx] = ismember(T.CELL_LINE, annotations.cellLines.Sanger_Name);
+[~, Drug_idx_A] = ismember(T.COMPOUND_A, annotations.drugs.ChallengeName);
+[~, Drug_idx_B] = ismember(T.COMPOUND_B, annotations.drugs.ChallengeName);
+
+for i = 1:size(T, 1)
+    if( T.IC50_A(i) < IC50(CL_idx(i), Drug_idx_A(i)) )
+        IC50(CL_idx(i), Drug_idx_A(i)) = T.IC50_A(i);
+        EMax(CL_idx(i), Drug_idx_A(i)) = T.Einf_A(i);
+        H(CL_idx(i), Drug_idx_A(i)) = T.H_A(i);        
+        Max_C(CL_idx(i), Drug_idx_A(i)) = str2double(T.MAX_CONC_A{i});        
     end
+    if( T.IC50_B(i) < IC50(CL_idx(i), Drug_idx_B(i)) )
+        IC50(CL_idx(i), Drug_idx_B(i)) = T.IC50_B(i);
+        EMax(CL_idx(i), Drug_idx_B(i)) = T.Einf_B(i);
+        H(CL_idx(i), Drug_idx_B(i)) = T.H_B(i);        
+        Max_C(CL_idx(i), Drug_idx_B(i)) = str2double(T.MAX_CONC_B{i});        
+    end    
 end
 
+IC50(IC50==inf) = nan;
+
+%% Compute sensitivity score (AUC, atm)
+doses = [0,0.00001,0.00003,0.0001,0.0003,0.001
+0,0.00003,0.0001,0.0003,0.001,0.003
+0,0.0001,0.0003,0.001,0.003,0.01
+0,0.0003,0.001,0.003,0.01,0.03
+0,0.001,0.003,0.01,0.03,0.1
+0,0.003,0.01,0.03,0.1,0.3
+0,0.01,0.03,0.1,0.3,1
+0,0.03,0.1,0.3,1,3
+0,0.1,0.3,1,3,10];
+
+doses_logscale = log10(doses+1);
+
+Drug_sensitivity = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
+
+fun = @(a, ic50, emax, h) 100 + ( (emax - 100) ./ (1 + (ic50 ./ a).^h) );
+
+for i = 1:size(annotations.cellLines, 1)
+    for j = 1:size(annotations.drugs, 1)
+        if( ~isnan(IC50(i, j)) ) % && ~isnan(EMax(i, j)) && ~isnan(H(i, j)))
+            current_dose = find(doses(:, end) == Max_C(i, j));
+            if(isempty(current_dose))
+                fprintf('%d %d %e\n', i, j, Max_C(i, j));
+            end
+            Drug_sensitivity(i, j) = integral(@(x) fun(x, IC50(i, j), EMax(i, j), H(i, j)), doses_logscale(current_dose, 2), doses_logscale(current_dose, end));
+        end
+    end
+end
+Drug_sensitivity = (Drug_sensitivity - nanmax(nonzeros(Drug_sensitivity))) ./ (nanmin(nonzeros(Drug_sensitivity)) - nanmax(nonzeros(Drug_sensitivity)));
+
 %% Homologous drug identification
+% Read and match IC50 values
+X = readtable('input/DrugHomology/gdsc_manova_input_w5.csv');
+row_mask = ismember(X.Cosmic_ID, annotations.cellLines.COSMIC);
+GDSC_IC50_table = X(row_mask, 1:144);
+GDSC_IC50_table.Properties.VariableNames(5:end) = cellfun(@(x) x(1:end-6), GDSC_IC50_table.Properties.VariableNames(5:end), 'UniformOutput', false);
+
+[~, IC50_row_perm] = ismember(GDSC_IC50_table.Cosmic_ID, annotations.cellLines.COSMIC);
+IC50_Z = -Modified_zscore(IC50(IC50_row_perm, :)); IC50_Z(isnan(IC50_Z)) = 0;
+GDSC_IC50_Z = -Modified_zscore(table2array(GDSC_IC50_table(1:end, 5:end))); GDSC_IC50_Z(isnan(GDSC_IC50_Z)) = 0;
+
+IC50_Sim = IC50_Z'*GDSC_IC50_Z;
+% IC50_Sim_counts = double(logical(IC50_Z'))*double(logical(GDSC_IC50_Z));
+% IC50_Sim_normalized = IC50_Sim ./ IC50_Sim_counts;
+IC50_Sim_normalized = IC50_Sim ./ repmat(sum(double(logical(IC50_Z')), 2), 1, size(GDSC_IC50_Z, 2));
+% IC50_Sim_normalized = IC50_Sim ./ repmat(sum(double(logical(GDSC_IC50_Z)), 1), size(IC50_Z, 2), 1);
+
+[~, idx] = max(IC50_Sim_normalized, [], 2);
+homoDrugs = GDSC_IC50_table.Properties.VariableNames(idx+4)';
+% Read drug targets
 tic; WinDTome = readtable('input/DrugHomology/WinDTome.txt', 'Delimiter', '\t', 'Format', '%s %s %d %s %s %s %s %s %s %s %d %d'); toc
 [WinDTome_drugs, ic, ia] = unique(WinDTome.Drug_ID);
 
@@ -37,5 +101,18 @@ for i = 1:numel(annotations.drugs)
     
 end
 
-% Now match IC50
-X = readtable('input/DrugHomology/gdsc_manova_input_w5.csv');
+
+
+
+
+%% Group cell-lines (first by tissue, and then by their molecular similarity)
+min_threshold = 100;
+tissue_names = unique(annotations.cellLines.Tissue__General_);
+annotations.groups = {};
+for i = 1:numel(tissue_names)
+    mask = strcmp( annotations.cellLines.Tissue__General_, tissue_names{i});
+    if(nnz(mask) <= min_threshold)
+        annotations.groups = [annotations.groups; {annotations.cellLines.Sanger_Name(mask)}];
+    else
+    end
+end
