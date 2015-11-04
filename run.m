@@ -5,6 +5,28 @@ annotations.cellLines = readtable('input/molecular/cell_info.csv', 'Delimiter', 
 annotations.drugs = readtable('input/synergy/Drugs.csv', 'Delimiter', ',');
 annotations.drugs.Target = cellfun(@(targets) strsplit(targets, ';'), annotations.drugs.Target, 'UniformOutput', false);
 
+
+%% Group cell-lines (first by tissue, and then by their molecular similarity)
+min_threshold = 100;
+tissue_names = unique(annotations.cellLines.Tissue__General_);
+annotations.groups = {};
+for i = 1:numel(tissue_names)
+    mask = strcmp( annotations.cellLines.Tissue__General_, tissue_names{i});
+    if(nnz(mask) <= min_threshold)
+        annotations.groups = [annotations.groups; {annotations.cellLines.Sanger_Name(mask)}];
+    else
+    end
+end
+
+%% Group drugs
+    D2D = zeros(size(annotations.drugs, 1));
+    for i = 1:size(annotations.drugs, 1)
+        for j = i+1:size(annotations.drugs, 1)
+            D2D(i, j) = 100*numel(intersect(annotations.drugs.Target{i}, annotations.drugs.Target{j})) / numel(union(annotations.drugs.Target{i}, annotations.drugs.Target{j}));
+        end
+    end
+    
+    D2D = max(D2D, D2D');
 %% Read Mono therapy
 IC50 = inf(size(annotations.cellLines, 1), size(annotations.drugs, 1));
 EMax = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
@@ -64,6 +86,37 @@ end
 Drug_sensitivity = (Drug_sensitivity - nanmax(nonzeros(Drug_sensitivity))) ./ (nanmin(nonzeros(Drug_sensitivity)) - nanmax(nonzeros(Drug_sensitivity)));
 
 %% Homologous drug identification
+% Read drug targets
+if(~exist('input/DrugHomology/WinDTome.mat', 'file'))
+    tic; 
+    WinDTome = readtable('input/DrugHomology/WinDTome.txt', 'Delimiter', '\t', 'Format', '%s %s %d %s %s %s %s %s %s %s %d %d'); 
+    [WinDTome_drugs, ic, ia] = unique(WinDTome.Drug_ID);
+
+    WinDTome_targets = arrayfun(@(drug_id) unique(WinDTome.Target_Gene_Symbol(ia == drug_id)), 1:numel(WinDTome_drugs), 'UniformOutput', false)';
+    drug_homologs = cell(size(annotations.drugs, 1), 1);
+    for i = 1:size(annotations.drugs, 1)
+        targets = annotations.drugs.Target{i};
+
+    %     target_overlap = cellfun(@(D) numel(intersect(D, targets)) / numel(union(D, targets)), WinDTome_targets);
+    %     target_overlap = cellfun(@(D) numel(intersect(D, targets)), WinDTome_targets);
+        tic; target_overlap = arrayfun(@(d) nnz(ismember(annotations.drugs.Target{i}, WinDTome_targets{d})), 1:numel(WinDTome_drugs)); toc
+        [~, drug_row, drug_overlap] = find(target_overlap);
+        if(numel(drug_row) == 0)
+            drug_homologs{i} = {};
+        else
+            homologous_drug_IDs = WinDTome_drugs(drug_row);
+            [~, perm] = sort(zscore(drug_overlap), 'descend');
+            homologous_drug_IDs = homologous_drug_IDs(perm);
+            drug_homologs{i} = homologous_drug_IDs;
+        end
+    end
+    toc
+    save('input/DrugHomology/WinDTome.mat', 'WinDTome', 'WinDTome_drugs', 'WinDTome_targets');
+else
+    load('input/DrugHomology/WinDTome.mat'); 
+end
+
+
 % Read and match IC50 values
 X = readtable('input/DrugHomology/gdsc_manova_input_w5.csv');
 row_mask = ismember(X.Cosmic_ID, annotations.cellLines.COSMIC);
@@ -82,37 +135,8 @@ IC50_Sim_normalized = IC50_Sim ./ repmat(sum(double(logical(IC50_Z')), 2), 1, si
 
 [~, idx] = max(IC50_Sim_normalized, [], 2);
 homoDrugs = GDSC_IC50_table.Properties.VariableNames(idx+4)';
-% Read drug targets
-tic; WinDTome = readtable('input/DrugHomology/WinDTome.txt', 'Delimiter', '\t', 'Format', '%s %s %d %s %s %s %s %s %s %s %d %d'); toc
-[WinDTome_drugs, ic, ia] = unique(WinDTome.Drug_ID);
-
-WinDTome_targets = arrayfun(@(drug_id) unique(WinDTome.Target_Gene_Symbol(ia == drug_id)), 1:numel(WinDTome_drugs), 'UniformOutput', false);
-
-for i = 1:numel(annotations.drugs)
-    targets = annotations.drugs.Target{i};
-    
-%     target_overlap = cellfun(@(D) numel(intersect(D, targets)) / numel(union(D, targets)), WinDTome_targets);
-    target_overlap = cellfun(@(D) numel(intersect(D, targets)), WinDTome_targets);
-
-    [~, drug_row, drug_overlap] = find(target_overlap);
-    homologous_drug_IDs = WinDTome_drugs(drug_row);
-    [~, perm] = sort(zscore(drug_overlap), 'descend');
-    homologous_drug_IDs = homologous_drug_IDs(perm);
-    
-end
 
 
 
 
 
-%% Group cell-lines (first by tissue, and then by their molecular similarity)
-min_threshold = 100;
-tissue_names = unique(annotations.cellLines.Tissue__General_);
-annotations.groups = {};
-for i = 1:numel(tissue_names)
-    mask = strcmp( annotations.cellLines.Tissue__General_, tissue_names{i});
-    if(nnz(mask) <= min_threshold)
-        annotations.groups = [annotations.groups; {annotations.cellLines.Sanger_Name(mask)}];
-    else
-    end
-end
