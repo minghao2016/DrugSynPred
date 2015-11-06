@@ -1,0 +1,10 @@
+SM Name,Description,Display Name,Cell,Protein,Data Type,Unit,Precision,Readout Type,Replicate,Comments,Datarecord ID
+maxDose(log10),maximum drug dose concentration,log10[max. dose (M)],,,Numeric,log(M),4,,,,388
+goodnessOfFit,,R^2 (goodness of fit),,,Numeric,,4,,,,389
+EC50(log10),half maximal effective concentration,log10[EC50 (M)],,,Numeric,log(M),4,,,,390
+IC50(log10),half maximal inhibitory concentration,log10[IC50 (M)],,,Numeric,log(M),4,,,,391
+GI50(log10),drug concentration that causes 50% growth inhibition,log10[GI50 (M)],,,Numeric,log(M),4,,,,392
+hillSlope,slope parameter in dose response curve,HillSlope,,,Numeric,,4,,,,393
+E_inf,bottom asymptote of dose response curve,E_inf,,,Numeric,,4,,,,394
+E_max,response at maximum dose,E_max,,,Numeric,,4,,,,395
+areaUnderCurve,area under dose response curve,AUC,,,Numeric,,4,,,,396
