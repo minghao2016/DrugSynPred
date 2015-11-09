@@ -3,7 +3,7 @@ addpath(genpath('code'));
 warning('off','all');    
 
 annotations.cellLines = readtable('input/Dream/molecular/cell_info.csv', 'Delimiter', ',');
-annotations.drugs = readtable('input/Dream/synergy/Drugs.csv', 'Delimiter', ',');
+annotations.drugs = readtable('input/Dream/synergy/Drugs_mapped.txt', 'Delimiter', '\t');
 annotations.drugs.Target = cellfun(@(targets) strsplit(targets, ';'), annotations.drugs.Target, 'UniformOutput', false);
 
 [~, CL_perm] = sort(annotations.cellLines.Tissue__General_);
@@ -12,61 +12,89 @@ annotations.cellLines = annotations.cellLines(CL_perm, :);
 
 
 %% Group cell-lines (first by tissue, and then by their molecular similarity)
-CellLine_distances = cell(2, 1);
+if(~exist('input/preprocessed/C2C.mat', 'file'))
+    CellLine_distances = cell(3, 1);
 
-% Tissue-based similarity
-CellLine_distances{1} = ones(size(annotations.cellLines, 1));
-tissue_names = unique(annotations.cellLines.Tissue__General_);
-for i = 1:numel(tissue_names)
-    tissue_idx = find(strcmp( annotations.cellLines.Tissue__General_, tissue_names{i}));
-    CellLine_distances{1}(tissue_idx, tissue_idx) = 0.25;
+    % Tissue-based similarity
+    CellLine_distances{1} = ones(size(annotations.cellLines, 1));
+    tissue_names = unique(annotations.cellLines.Tissue__General_);
+    for i = 1:numel(tissue_names)
+        tissue_idx = find(strcmp( annotations.cellLines.Tissue__General_, tissue_names{i}));
+        CellLine_distances{1}(tissue_idx, tissue_idx) = 0;
+    end
+    CellLine_distances{1} = CellLine_distances{1};
+
+    % Expression-based similarity
+    [expr_table, cellLine_names, gene_names] = my_tblread('input/Dream/molecular/gex.csv', ',');
+    cellLine_names = cellfun(@(x) x(2:end-1), cellLine_names, 'UniformOutput', false);
+    gene_names = cellfun(@(x) x(2:end-1), gene_names, 'UniformOutput', false);
+
+    [U,S,V] = svd(expr_table, 'econ');
+    adjusted_expr = expr_table - U(:, 1)*S(1,1)*V(:, 1)';
+
+    % [U,S,V] = svd(expr_table, 'econ');
+    % adjusted_expr = expr_table - U(:, 1)*S(1,1)*V(:, 1)';
+
+    % [Expr_corr, Expr_corr_pval] = corr(adjusted_expr);
+    % Expr_corr_pval(Expr_corr < 0) = 1;
+    % Expr_corr_pval(1e-10 < Expr_corr_pval) = 1;
+    % Expr_corr_pval(Expr_corr_pval == 0) = min(nonzeros(Expr_corr_pval));
+    % Expr_sim = -log10(Expr_corr_pval);
+    % 
+    % 
+    % ind = find(Expr_sim);
+    % x = Expr_sim(ind);
+    % x = (max(x) - x) ./ (max(x) - min(x));
+    % Expr_dist = ones(size(Expr_sim));
+    % Expr_dist(ind) = x;
+
+    % Expr_dist = (1 - Expr_sim) ./ 2;
+
+    Expr_Z = Standard_Normalization(expr_table');
+    Expr_dist = dist2(Expr_Z, Expr_Z);
+    Expr_dist = Expr_dist ./ max(nonzeros(Expr_dist));
+
+    CellLine_distances{2} = ones(size(annotations.cellLines, 1));
+    [~, idx] = ismember(cellLine_names, annotations.cellLines.Sanger_Name);
+    CellLine_distances{2}(idx, idx) = Expr_dist;
+    % HeatMap(CellLine_distances{2})
+
+
+    % Methylation
+    [methyl_table, cellLine_names, gene_names] = my_tblread('input/Dream/molecular/methyl_probe_beta.csv', ',');
+    cellLine_names = cellfun(@(x) x(2:end-1), cellLine_names, 'UniformOutput', false);
+    gene_names = cellfun(@(x) x(2:end-1), gene_names, 'UniformOutput', false);
+
+    Methyl_Z = Standard_Normalization(methyl_table');
+    Methyl_dist = dist2(Methyl_Z, Methyl_Z);
+    Methyl_dist = Methyl_dist ./ max(nonzeros(Methyl_dist));
+
+    CellLine_distances{3} = ones(size(annotations.cellLines, 1));
+    [~, idx] = ismember(cellLine_names, annotations.cellLines.Sanger_Name);
+    CellLine_distances{3}(idx, idx) = Methyl_dist;
+    % HeatMap(CellLine_distances{3})
+
+
+    % Run SNF
+    % SNF parameters
+    K = 20;%number of neighbors, usually (10~30)
+    alpha = 0.5; %hyperparameter, usually (0.3~0.8)
+    T = 15; %Number of Iterations, usually (10~20)
+
+    W1 = affinityMatrix(CellLine_distances{1}, K, alpha);
+    W2 = affinityMatrix(CellLine_distances{2}, K, alpha);
+    W3 = affinityMatrix(CellLine_distances{3}, K, alpha);
+
+    C2C = SNF({W1,W2, W3}, K, T);
+    C2C = C2C - diag(diag(C2C));
+    C2C = (C2C - min(nonzeros(C2C))) ./ (max(nonzeros(C2C)) - min(nonzeros(C2C)));
+    HeatMap(C2C)
+
+    save('input/preprocessed/C2C.mat', 'C2C', 'CellLine_distances');
+
+else
+    load('input/preprocessed/C2C.mat');
 end
-CellLine_distances{1} = CellLine_distances{1};
-
-% Expression-based similarity
-[expr_table, cellLine_names, gene_names] = my_tblread('input/Dream/molecular/gex.csv', ',');
-cellLine_names = cellfun(@(x) x(2:end-1), cellLine_names, 'UniformOutput', false);
-gene_names = cellfun(@(x) x(2:end-1), gene_names, 'UniformOutput', false);
-
-[U,S,V] = svd(expr_table, 'econ');
-adjusted_expr = expr_table - U(:, 1)*S(1,1)*V(:, 1)';
-
-[Expr_corr, Expr_corr_pval] = corr(adjusted_expr);
-Expr_corr_pval(Expr_corr < 0) = 1;
-Expr_corr_pval(1e-10 < Expr_corr_pval) = 1;
-Expr_corr_pval(Expr_corr_pval == 0) = min(nonzeros(Expr_corr_pval));
-Expr_sim = -log10(Expr_corr_pval);
-
-
-ind = find(Expr_sim);
-x = Expr_sim(ind);
-x = (max(x) - x) ./ (max(x) - min(x));
-Expr_dist = ones(size(Expr_sim));
-Expr_dist(ind) = x;
-
-% Expr_dist = (1 - Expr_sim) ./ 2;
-
-% Expr_Z = Standard_Normalization(expr_table);
-% Expr_dist = dist2(Expr_Z', Expr_Z');
-% Expr_dist = Expr_dist ./ max(nonzeros(Expr_dist));
-
-CellLine_distances{2} = ones(size(annotations.cellLines, 1));
-[~, idx] = ismember(cellLine_names, annotations.cellLines.Sanger_Name);
-CellLine_distances{2}(idx, idx) = Expr_dist;
-
-% Run SNF
-% SNF parameters
-K = 5;%number of neighbors, usually (10~30)
-alpha = 0.5; %hyperparameter, usually (0.3~0.8)
-T = 20; %Number of Iterations, usually (10~20)
-
-W1 = affinityMatrix(CellLine_distances{1}, K, alpha);
-W2 = affinityMatrix(CellLine_distances{2}, K, alpha);
-
-C2C = SNF({W1,W2}, K, T);
-C2C = C2C - diag(diag(C2C));
-C2C = (C2C - min(nonzeros(C2C))) ./ (max(nonzeros(C2C)) - min(nonzeros(C2C)));
-HeatMap(C2C)
 %% Group drugs
 D2D = zeros(size(annotations.drugs, 1));
 for i = 1:size(annotations.drugs, 1)
