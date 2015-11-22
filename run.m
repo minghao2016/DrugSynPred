@@ -15,28 +15,50 @@ experiment_type = 'leaderBoard';
 [ ACSN ] = import_ACSN();
 
 
+%% Read Monotherapy data and impute missing values based on Dual Layer method
+% [ Mono ] = read_MonoTherapy(annotations, 'input/Dream/synergy/ch2_leaderBoard_monoTherapy.csv' );
+[ Mono ] = read_MonoTherapy(annotations, 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv' );
+
+% X = Mono.Drug_sensitivity; X(isnan(X)) = 0;
+% Y = double(logical(X));
+% XX = X'*X ./ (Y'*Y);
+% XX(isnan(XX)) = 0;
+% XX(XX > 0) = (nonzeros(XX) - min(nonzeros(XX))) / (max(nonzeros(XX)) - min(nonzeros(XX)));
+% SenSim = XX;
+% SenSim = SenSim - diag(diag(SenSim));
+% SenSim(SenSim < 0.9) = 0;
+% clustergram(SenSim, 'RowLabels', annotations.drugs.ChallengeName, 'ColumnLabels', annotations.drugs.ChallengeName, 'Linkage', 'average', 'ColorMap', colormap(flipud(redgreencmap())), 'OPTIMALLEAFORDER', true)
+
+
 %% Cellline-Celline Similarity Network
-C2C = Construct_C2C(annotations, 'expression_only', false);
+C2C = Construct_C2C(annotations, 'expression_only', true);
 
 
 %% Drug-Drug Similarity Network
 D2D = Construct_D2D(ACSN, annotations);
 
 
-%% Read Monotherapy data and impute missing values based on Dual Layer method
-[ Mono ] = read_MonoTherapy(annotations, C2C, D2D, 'input/Dream/synergy/ch2_leaderBoard_monoTherapy.csv' );
-
 %% Read Leadership board
     Leadership = readtable('input/Dream/submission/leadership/synergy_matrix.csv', 'ReadRowNames', true);
     pair_names = cellfun(@(x) strsplit(x, '.'), Leadership.Properties.RowNames, 'UniformOutput', false);
+    pair_idx = cell(numel(pair_names), 1);
     for i = 1:numel(pair_names)
         pair_idx{i}{1} = find(strcmp(pair_names{i}{1}, annotations.drugs.ChallengeName));
         pair_idx{i}{2} = find(strcmp(pair_names{i}{2}, annotations.drugs.ChallengeName));        
     end
+    sorted_CL = Leadership.Properties.VariableNames;
 
 %% Read LINCS dataset
     LINCS_ds = parse_gct('input/LINCS/final/LINCS_subset.gct');
+
+%     % If we need to fgind replicates
+%     [x, y, z] = unique(strcat(LINCS_ds.cdesc(:, 1), LINCS_ds.cdesc(:,7))); 
+    
     LINCS_celllines = LINCS_ds.cdesc(:, 1);
+    LINCS_celllines(strcmp(LINCS_celllines, 'BT20')) = {'BT-20'};
+    LINCS_celllines(strcmp(LINCS_celllines, 'HT29')) = {'HT-29'};    
+    LINCS_celllines(strcmp(LINCS_celllines, 'MDAMB231')) = {'MDA-MB-231'};    
+    
     LINCS_drugs = LINCS_ds.cdesc(:, 7);
     LINCS_expression_matrix = LINCS_ds.mat; % TODO: Should we column normalize to ensure constant transcriptional activity for each drug?
     LINCS_expression_within_groups = zeros(numel(ACSN.class_names), size(LINCS_expression_matrix, 2));
@@ -48,41 +70,63 @@ D2D = Construct_D2D(ACSN, annotations);
         LINCS_expression_within_groups(g, :) = arrayfun(@(col) mean(LINCS_expression_matrix(rows, col)), 1:size(LINCS_expression_matrix, 2));        
     end
     
-    % TODO: Should we use aggregated scores in groups (probably), or all
-    % genes without grouping (unlikely)?
-    LD2LD = LINCS_expression_within_groups'*LINCS_expression_within_groups; % Similarity of LINCS drugs based on their expression within functional classes from ACSN
+    
+    [~, cl_idx] = ismember(LINCS_celllines, annotations.cellLines.Sanger_Name);
+    Dream2LINCS= readtable('/home/shahin/Dropbox/Dream/experiment/input/LINCS/final/preliminary_mapping.csv');
+    
+    Expr_DS = cell(size(annotations.drugs, 1), size(annotations.cellLines, 1));
+    for i = 1:size(LINCS_expression_matrix, 2)        
+        rows = find(ismember(Dream2LINCS.ID, LINCS_drugs{i}));        
+        % TODO: Should we use aggregated scores in groups (probably), or all
+        % genes without grouping (unlikely)?
+%         Expr_DS(rows, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
+        % *** OR ***
+        Expr_DS(rows, cl_idx(i)) = {LINCS_expression_within_groups(:, i)};
+    end
+    
 
     % TODO: Use 2 Layer method to impute missing values
-%% Compute Synergy scores
-    n = size(annotations.drugs, 1);
-    m = size(annotations.cellLines, 1);
     
-    synergy_cell = cell(m, 1);
-    for i = 1:m
-        synergy_cell{i} = zeros(n, n);
+    
+%% Compute Synergy scores
+    Synergy_score = 2;    
+    Confidence_mat = nan(size(Leadership));
+    for pIdx = 1:numel(pair_idx)
+        d1 = pair_idx{pIdx}{1};
+        d2 = pair_idx{pIdx}{2};
+        for cIdx = 1:size(annotations.cellLines, 1)
+            Confidence_mat(pIdx, cIdx) = Synergy_score * rand(1);
+        end
     end
     
-    for j = 1:m
-        for i = 1:numel(pair_names)
-            % We need to fill in the values using Synergy mat here before submission
-        end
-    end    
 
 %% Export
+    synergy_threshold = 1; % TODO: What is the optimal threshold??
     
-    % fill synergy predictions column-by-column
-    tic
-    for j = 1:m
-        for i = 1:numel(pair_names)
-            Leadership{i, j} = synergy_cell{j}(pair_idx{i}{1}, pair_idx{i}{2}); % TODO: Convenient, but TOO SLOW!!
-        end
+    fd_syn = fopen(fullfile('output', 'predictions', experiment_type, 'synergy_matrix.csv'), 'w');
+    fd_conf = fopen(fullfile('output', 'predictions', experiment_type, 'confidence_matrix.csv'), 'w');
+    for cIdx = 1:size(annotations.cellLines, 1)
+        fprintf(fd_syn, ',%s', sorted_CL{cIdx});
+        fprintf(fd_conf, ',%s', sorted_CL{cIdx});
     end
-    toc
+    fprintf(fd_syn, '\n');
+    fprintf(fd_conf, '\n');    
     
-    writetable(Leadership, sprintf('output/predictions/%s/synergy_matrix.csv', experiment_type), 'WriteRowNames', true);
-    %!!!!  DON'T FORGET to remove "row" from the beginning of the file !!!!
+    for pIdx = 1:numel(pair_idx)
+        fprintf(fd_syn, '%s.%s', pair_names{pIdx}{1}, pair_names{pIdx}{2});
+        fprintf(fd_conf, '%s.%s', pair_names{pIdx}{1}, pair_names{pIdx}{2});
+        for cIdx = 1:size(annotations.cellLines, 1)
+            fprintf(fd_syn, ',%d', Confidence_mat(pIdx, cIdx) > synergy_threshold);
+            fprintf(fd_conf, ',%f', Confidence_mat(pIdx, cIdx));
+        end
+        if(pIdx ~= numel(pair_idx))
+            fprintf(fd_syn, '\n');
+            fprintf(fd_conf, '\n');    
+        end
+    end    
+    fclose(fd_syn);
+    fclose(fd_conf);
 
-    
 %%
 % %% Homologous drug identification
 % 

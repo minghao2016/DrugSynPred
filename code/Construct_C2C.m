@@ -15,7 +15,7 @@ function [ C2C ] = Construct_C2C( annotations, varargin )
     
     CellLine_distances = cell(3, 1);
 
-% if(~exist('input/preprocessed/C2C.mat', 'file'))    
+if(~exist('input/preprocessed/C2C.mat', 'file'))    
     %% Tissue-based similarity
     CellLine_distances{1} = ones(size(annotations.cellLines, 1));
     tissue_names = unique(annotations.cellLines.Tissue__General_);
@@ -26,6 +26,52 @@ function [ C2C ] = Construct_C2C( annotations, varargin )
     CellLine_distances{1} = CellLine_distances{1};
     
     %% Process Expression datasets
+    % Co-expr matrix from CCLE
+    fd = fopen('input/CCLE/CCLE_Expression_Entrez_2012-09-29.gct', 'r');
+    if(fd == -1)
+        error('Cannot open file input/CCLE/CCLE_Expression_Entrez_2012-09-29.gct');
+    else        
+        header = fscanf(fd, '%[^\r\n]\r\n', 1);
+        cols = textscan(header, '%s', 'Whitespace', '', 'Delimiter', '\t');
+        colNames = cols{1};
+
+        FormatString = sprintf('%%s%%s%s%%[^\\r\\n]', repmat('%f',1, numel(colNames)-3));        
+        table = textscan(fd, FormatString, 'Whitespace', '', 'Delimiter', '\t');
+    end
+    fclose(fd);
+    
+    CCLE_mask = ismember(colNames, annotations.cellLines.CCLE_Name);
+    table = table(CCLE_mask);
+    colNames = colNames(CCLE_mask);
+    
+    CCLE_expr = zeros(numel(table{1}), size(annotations.cellLines, 1));    
+    [~, selected_cols] = ismember(colNames, annotations.cellLines.CCLE_Name);
+    CCLE_expr(:, selected_cols) = cell2mat(table);
+
+    P = normalize(CCLE_expr, 'dim', 2, 'pnorm', 1); % Relative expression of each gene in different tissues
+    I = spfun(@(x) -log2(x), P); % Information content of the relative expression of each gene   
+    H = sum(P .* I, 2); % Shannon entropy of the relative expression -- overall tissue-specificity of genes. It has unit of "bits" and is between 0 -> completely selective) and log2(k) -> Uniform/HK gene    
+    sorted_H = sort(H);
+    sigSelective_no = cut(H, 'selection_method', par.selection_method, 'selection_half', 'bottom');
+    entropy_cutoff = sorted_H(sigSelective_no);
+    
+    expression_mat = CCLE_expr(H < entropy_cutoff, :);
+    
+    [CC, CC_pval] = corr(expression_mat);   
+    CC_pval(CC < 0) = 1;
+    CC_pval(1e-10 < CC_pval) = 1;
+    CC_pval(CC_pval == 0) = min(nonzeros(CC_pval));    
+    S = -log10(CC_pval);
+
+    [ii, jj, vv] = find(S);
+    D = full(sparse(ii, jj, (max(vv) - vv) ./ (max(vv) - min(vv)), size(S, 1), size(S, 1)));
+    D = D - diag(diag(D));  
+    D(isnan(D)) = 1;
+    co_exp{1} = D; 
+
+    
+
+    % Co-expr matrix from Dream
     [expr_table, cellLine_names] = my_tblread('input/Dream/molecular/gex.csv', ',');
     cellLine_names = cellfun(@(x) x(2:end-1), cellLine_names, 'UniformOutput', false);
 
@@ -53,12 +99,16 @@ function [ C2C ] = Construct_C2C( annotations, varargin )
     [ii, jj, vv] = find(S);
     D = full(sparse(ii, jj, (max(vv) - vv) ./ (max(vv) - min(vv)), size(S, 1), size(S, 1)));
     D = D - diag(diag(D));    
+    D(isnan(D)) = 1;
     
-    CellLine_distances{2} = ones(size(annotations.cellLines, 1));
+   
+    co_exp{2} = ones(size(annotations.cellLines, 1));
     [~, idx] = ismember(cellLine_names, annotations.cellLines.Sanger_Name);
-    CellLine_distances{2}(idx, idx) = D; 
+    co_exp{2}(idx, idx) = D; 
 
-    if(par.expression_only)
+    CellLine_distances{2} = min(co_exp{1}, co_exp{2});
+    
+    if(par.expression_only == true)
         C2C = 1 - CellLine_distances{2};
 
 %         breast_subtype = {'BT-20','Basal';'BT-474','Luminal';'BT-549','Claudin-low';'HCC1143','Basal';'HCC1187','Basal';'HCC1395','Claudin-low';'HCC1419','Luminal';'HCC1428','Luminal';'HCC1806','Basal';'HCC1937','Basal';'HCC1954','Basal';'HCC38','Claudin-low';'HCC70','Basal';'Hs-578-T','Claudin-low';'MCF7','Luminal';'MDA-MB-157','Claudin-low';'MDA-MB-231','Claudin-low';'MDA-MB-361','Luminal';'MDA-MB-415','Luminal';'MDA-MB-436','Claudin-low';'MDA-MB-453','Luminal';'MDA-MB-468','Basal';'T47D','Luminal'}; % From Sichani or Heiser?
@@ -130,8 +180,8 @@ function [ C2C ] = Construct_C2C( annotations, varargin )
 
     save('input/preprocessed/C2C.mat', 'expr_table', 'H', 'MAF', 'Census_genes', 'CellLine_distances', 'C2C');
 
-% else
-%     load('input/preprocessed/C2C.mat');
-% end
+else
+    load('input/preprocessed/C2C.mat');
+end
 end
 

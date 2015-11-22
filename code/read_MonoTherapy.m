@@ -1,17 +1,25 @@
-function [ Mono ] = read_MonoTherapy( annotations, C2C, D2D, fname )
+function [ Mono ] = read_MonoTherapy( annotations, fname )
 
 % Read Mono therapy
+    Mono.Synergy = -inf(size(annotations.drugs, 1), size(annotations.drugs, 1));
+    Mono.Quality = -inf(size(annotations.drugs, 1), size(annotations.drugs, 1));
     Mono.IC50 = inf(size(annotations.cellLines, 1), size(annotations.drugs, 1));
     Mono.EMax = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
     Mono.H = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
     Mono.Max_C = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
 
-    T = readtable(fname);
+    T = readtable(fname, 'TreatAsEmpty', 'NA');
     [~, CL_idx] = ismember(T.CELL_LINE, annotations.cellLines.Sanger_Name);
     [~, Drug_idx_A] = ismember(T.COMPOUND_A, annotations.drugs.ChallengeName);
     [~, Drug_idx_B] = ismember(T.COMPOUND_B, annotations.drugs.ChallengeName);
 
     for i = 1:size(T, 1)
+        if(~isnan(T.SYNERGY_SCORE(i)))
+            Mono.Synergy(Drug_idx_A(i), Drug_idx_B(i)) = T.SYNERGY_SCORE(i);
+        end
+        if(~isnan(T.QA(i)))
+            Mono.Quality(Drug_idx_A(i), Drug_idx_B(i)) = T.QA(i);
+        end
         if( T.IC50_A(i) < Mono.IC50(CL_idx(i), Drug_idx_A(i)) )
             Mono.IC50(CL_idx(i), Drug_idx_A(i)) = T.IC50_A(i);
             Mono.EMax(CL_idx(i), Drug_idx_A(i)) = T.Einf_A(i);
@@ -27,7 +35,8 @@ function [ Mono ] = read_MonoTherapy( annotations, C2C, D2D, fname )
     end
 
     Mono.IC50(Mono.IC50==inf) = nan;
-
+    Mono.Synergy = max(Mono.Synergy, Mono.Synergy');
+    Mono.Quality = max(Mono.Quality, Mono.Quality');
 % Impute missing values based on Dual Layer method
 
 % Compute sensitivity score (AUC, atm)
@@ -39,7 +48,8 @@ function [ Mono ] = read_MonoTherapy( annotations, C2C, D2D, fname )
     0,0.003,0.01,0.03,0.1,0.3
     0,0.01,0.03,0.1,0.3,1
     0,0.03,0.1,0.3,1,3
-    0,0.1,0.3,1,3,10];
+    0,0.1,0.3,1,3,10
+    0, 0.75, 2.5, 7.5, 25, 75];
 
     doses_logscale = log10(doses+1);
 
@@ -54,11 +64,15 @@ function [ Mono ] = read_MonoTherapy( annotations, C2C, D2D, fname )
                 if(isempty(current_dose))
                     fprintf('%d %d %e\n', i, j, Mono.Max_C(i, j));
                 end
-                Mono.Drug_sensitivity(i, j) = integral(@(x) fun(x, Mono.IC50(i, j), Mono.EMax(i, j), Mono.H(i, j)), doses_logscale(current_dose, 2), doses_logscale(current_dose, end));
+                Mono.Drug_sensitivity(i, j) = integral(@(x) fun(x, Mono.IC50(i, j), Mono.EMax(i, j), Mono.H(i, j)), doses(current_dose, 2), doses(current_dose, end));
             end
         end
     end
+    
+%     [ii, jj] = find(~isnan(Mono.Drug_sensitivity));
+%     vv = Mono.Drug_sensitivity(sub2ind(size(Mono.Drug_sensitivity), ii, jj));
+%     zz = Modified_zscore(vv);
+    
     Mono.Drug_sensitivity = (Mono.Drug_sensitivity - nanmax(nonzeros(Mono.Drug_sensitivity))) ./ (nanmin(nonzeros(Mono.Drug_sensitivity)) - nanmax(nonzeros(Mono.Drug_sensitivity)));
-
 end
 

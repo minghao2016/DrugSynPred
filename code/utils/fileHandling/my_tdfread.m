@@ -10,7 +10,8 @@ function [table, colNames] = my_tdfread( path)
         cols = textscan(header, '%s', 'Whitespace', '', 'Delimiter', '\t');
         colNames = cols{1};
 
-        FormatString = sprintf('%s%%[^\\r\\n]', repmat('%[^\t]\t',1, numel(colNames)-1));
+%         FormatString = sprintf('%s%%[^\\r\\n]', repmat('%[^\t]\t',1, numel(colNames)-1));
+        FormatString = sprintf('%s%%[^\\r\\n]', repmat('%s',1, numel(colNames)-1));
         table = textscan(fd, FormatString, 'Whitespace', '', 'Delimiter', '\t');
     end
     fclose(fd);
