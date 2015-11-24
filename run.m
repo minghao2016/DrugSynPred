@@ -12,6 +12,7 @@ annotations.cellLines = annotations.cellLines(CL_perm, :);
 experiment_type = 'leaderBoard';
 
 %% Load signaling interactome from ACSN together with 55 functional classes relevant to cancer
+% TODO: To expand nr not to expand?
 [ ACSN ] = import_ACSN();
 
 
@@ -19,6 +20,7 @@ experiment_type = 'leaderBoard';
 % [ Mono ] = read_MonoTherapy(annotations, 'input/Dream/synergy/ch2_leaderBoard_monoTherapy.csv' );
 [ Mono ] = read_MonoTherapy(annotations, 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv' );
 
+%% TODO: Can we use MonoTherapy data as a source for computing D2D?
 % X = Mono.Drug_sensitivity; X(isnan(X)) = 0;
 % Y = double(logical(X));
 % XX = X'*X ./ (Y'*Y);
@@ -30,12 +32,15 @@ experiment_type = 'leaderBoard';
 % clustergram(SenSim, 'RowLabels', annotations.drugs.ChallengeName, 'ColumnLabels', annotations.drugs.ChallengeName, 'Linkage', 'average', 'ColorMap', colormap(flipud(redgreencmap())), 'OPTIMALLEAFORDER', true)
 
 
-%% Cellline-Celline Similarity Network
-C2C = Construct_C2C(annotations, 'expression_only', true);
-
-
 %% Drug-Drug Similarity Network
+% TODO: Gene targets for DNA, Methylation, ... targeting drugs
 D2D = Construct_D2D(ACSN, annotations);
+
+
+%% Cellline-Celline Similarity Network
+% TODO: Which networks to use? Should we also use co-methyl and co-mut? How
+% to optimally combine using Mashup, GeneMANIA, or SNF?
+C2C = Construct_C2C(annotations, 'expression_only', true);
 
 
 %% Read Leadership board
@@ -49,11 +54,10 @@ D2D = Construct_D2D(ACSN, annotations);
     sorted_CL = Leadership.Properties.VariableNames;
 
 %% Read LINCS dataset
+    % TODO: Draft file! CHECK CHECK CHECK, to make sure we selected
+    % the best drugs to assay
     LINCS_ds = parse_gct('input/LINCS/final/LINCS_subset.gct');
-
-%     % If we need to fgind replicates
-%     [x, y, z] = unique(strcat(LINCS_ds.cdesc(:, 1), LINCS_ds.cdesc(:,7))); 
-    
+   
     LINCS_celllines = LINCS_ds.cdesc(:, 1);
     LINCS_celllines(strcmp(LINCS_celllines, 'BT20')) = {'BT-20'};
     LINCS_celllines(strcmp(LINCS_celllines, 'HT29')) = {'HT-29'};    
@@ -71,7 +75,9 @@ D2D = Construct_D2D(ACSN, annotations);
     end
     
     
+    
     [~, cl_idx] = ismember(LINCS_celllines, annotations.cellLines.Sanger_Name);
+    % TODO: Check to make sure all ID mappings are correct
     Dream2LINCS= readtable('/home/shahin/Dropbox/Dream/experiment/input/LINCS/final/preliminary_mapping.csv');
     
     Expr_DS = cell(size(annotations.drugs, 1), size(annotations.cellLines, 1));
@@ -86,9 +92,28 @@ D2D = Construct_D2D(ACSN, annotations);
     
 
     % TODO: Use 2 Layer method to impute missing values
-    
+
     
 %% Compute Synergy scores
+    % TODO: Synergy prediction
+    % 1- Similarity
+    % a- correlation between all genes in the pair of expression signatures
+    % b- correlation between pathway genes in the pair of expression signatures
+    % c- correlation between average of genes in each pathway in the pair of expression signatures
+ 
+    % 2- Dissimilarity
+    % a- Manhattan distance between all genes in the pair of expression signatures
+    % b- Manhattan distance between pathway genes in the pair of expression signatures
+    % c- Manhattan distance between average of genes in each pathway in the pair of expression signatures
+    
+    % 3- Drug topological signatures using TS networks
+    
+    % 4- Integrate with Monotherapy to account for cell-type specific
+    % resistance
+    
+    % 5- Synergy among functions: 
+    % a) nondirectionl (RWR over ACSN)
+    
     Synergy_score = 2;    
     Confidence_mat = nan(size(Leadership));
     for pIdx = 1:numel(pair_idx)
@@ -126,32 +151,5 @@ D2D = Construct_D2D(ACSN, annotations);
     end    
     fclose(fd_syn);
     fclose(fd_conf);
-
-%%
-% %% Homologous drug identification
-% 
-% 
-% 
-% % Read and match IC50 values
-% X = readtable('input/DrugHomology/gdsc_manova_input_w5.csv');
-% row_mask = ismember(X.Cosmic_ID, annotations.cellLines.COSMIC);
-% GDSC_IC50_table = X(row_mask, 1:144);
-% GDSC_IC50_table.Properties.VariableNames(5:end) = cellfun(@(x) x(1:end-6), GDSC_IC50_table.Properties.VariableNames(5:end), 'UniformOutput', false);
-% 
-% [~, IC50_row_perm] = ismember(GDSC_IC50_table.Cosmic_ID, annotations.cellLines.COSMIC);
-% IC50_Z = -Modified_zscore(IC50(IC50_row_perm, :)); IC50_Z(isnan(IC50_Z)) = 0;
-% GDSC_IC50_Z = -Modified_zscore(table2array(GDSC_IC50_table(1:end, 5:end))); GDSC_IC50_Z(isnan(GDSC_IC50_Z)) = 0;
-% 
-% IC50_Sim = IC50_Z'*GDSC_IC50_Z;
-% % IC50_Sim_counts = double(logical(IC50_Z'))*double(logical(GDSC_IC50_Z));
-% % IC50_Sim_normalized = IC50_Sim ./ IC50_Sim_counts;
-% IC50_Sim_normalized = IC50_Sim ./ repmat(sum(double(logical(IC50_Z')), 2), 1, size(GDSC_IC50_Z, 2));
-% % IC50_Sim_normalized = IC50_Sim ./ repmat(sum(double(logical(GDSC_IC50_Z)), 1), size(IC50_Z, 2), 1);
-% 
-% [~, idx] = max(IC50_Sim_normalized, [], 2);
-% homoDrugs = GDSC_IC50_table.Properties.VariableNames(idx+4)';
-
-
-
 
 
