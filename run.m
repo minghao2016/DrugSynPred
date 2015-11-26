@@ -13,6 +13,7 @@ experiment_type = 'leaderBoard';
 
 %% Load signaling interactome from ACSN together with 55 functional classes relevant to cancer
 % TODO: To expand nr not to expand?
+% TODO\: Edge directions
 [ ACSN ] = import_ACSN();
 
 
