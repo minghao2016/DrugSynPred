@@ -47,7 +47,7 @@ getNegLog10pVal_ch2 <- function(fit, obs) {
 # Scores from confusion Matrix
 # -----------------------------------------------------------------------
 getPrecision_ch2 <- function(pred, threshold=30) {
-  obs <- read.csv("<Leaderboard file here>")
+  obs <- read.csv("../../input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv")
   obs <- getObs_ch2(obs,threshold)
   
   pred <- read.csv(pred,stringsAsFactors=F,check.names = F)
@@ -107,7 +107,7 @@ getPrecision_ch2 <- function(pred, threshold=30) {
 # Get the drug combinations score of Subchallenge 2
 # ------------------------------------------------------------------------------------
 getOneDimScore_ch2 <- function(pred, confidence="none", topX=10, rows=T) {
-  obs <- read.csv("<Leaderboard file here>")
+  obs <- read.csv("../../input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv")
   obs <- getObs_ch2(obs)
   
   pred <- read.csv(pred,stringsAsFactors=F,check.names = F)
@@ -171,7 +171,7 @@ getOneDimScore_ch2 <- function(pred, confidence="none", topX=10, rows=T) {
 # Get the performance score of Subchallenge 2
 # ------------------------------------------------------------------------------------
 getGlobalScore_ch2 <- function(pred) { 
-  obs <- read.csv("<Leaderboard file here>")
+  obs <- read.csv("../../input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv")
   obs <- getObs_ch2(obs)
   
   pred <- read.csv(pred,stringsAsFactors=F,check.names = F)
