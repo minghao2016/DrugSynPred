@@ -3,7 +3,7 @@ addpath(genpath('code'));
 warning('off','all');    
 
 annotations.cellLines = readtable('input/Dream/molecular/cell_info.csv', 'Delimiter', ',');
-annotations.drugs = readtable('input/Dream/synergy/Drugs_mapped.txt', 'Delimiter', '\t');
+annotations.drugs = readtable('input/Dream/synergy/Drugs_final.txt', 'Delimiter', '\t');
 annotations.drugs.Target = cellfun(@(targets) strsplit(targets, ';'), annotations.drugs.Target, 'UniformOutput', false);
 
 [~, CL_perm] = sort(annotations.cellLines.Tissue__General_);
