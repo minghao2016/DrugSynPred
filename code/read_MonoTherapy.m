@@ -1,4 +1,4 @@
-function [ Mono ] = read_MonoTherapy( annotations, fname )
+function [ Mono, Pairs ] = read_MonoTherapy( annotations, fname )
 
 % Read Mono therapy
     Mono.Synergy = -inf(size(annotations.drugs, 1), size(annotations.drugs, 1));
@@ -13,6 +13,9 @@ function [ Mono ] = read_MonoTherapy( annotations, fname )
     [~, Drug_idx_A] = ismember(T.COMPOUND_A, annotations.drugs.ChallengeName);
     [~, Drug_idx_B] = ismember(T.COMPOUND_B, annotations.drugs.ChallengeName);
 
+    Pairs = unique([Drug_idx_A, Drug_idx_B], 'rows');
+    
+    
     for i = 1:size(T, 1)
         if(~isnan(T.SYNERGY_SCORE(i)))
             Mono.Synergy(Drug_idx_A(i), Drug_idx_B(i)) = T.SYNERGY_SCORE(i);

@@ -5,6 +5,7 @@ warning('off','all');
 annotations.cellLines = readtable('input/Dream/molecular/cell_info.csv', 'Delimiter', ',');
 annotations.drugs = readtable('input/Dream/synergy/Drugs_final.txt', 'Delimiter', '\t');
 annotations.drugs.Target = cellfun(@(targets) strsplit(targets, ';'), annotations.drugs.Target, 'UniformOutput', false);
+sorted_CL = sort(annotations.cellLines.Sanger_Name);
 
 [~, CL_perm] = sort(annotations.cellLines.Tissue__General_);
 annotations.cellLines = annotations.cellLines(CL_perm, :);
@@ -19,7 +20,8 @@ experiment_type = 'leaderBoard';
 
 %% Read Monotherapy data and impute missing values based on Dual Layer method
 % [ Mono ] = read_MonoTherapy(annotations, 'input/Dream/synergy/ch2_leaderBoard_monoTherapy.csv' );
-[ Mono ] = read_MonoTherapy(annotations, 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv' );
+[ Mono, Pairs ] = read_MonoTherapy(annotations, 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv' );
+Pair_names = arrayfun(@(x) annotations.drugs.ChallengeName{x}, Pairs, 'UniformOutput', false);
 
 %% TODO: Can we use MonoTherapy data as a source for computing D2D?
 % X = Mono.Drug_sensitivity; X(isnan(X)) = 0;
@@ -43,16 +45,16 @@ D2D = Construct_D2D(ACSN, annotations);
 % to optimally combine using Mashup, GeneMANIA, or SNF?
 C2C = Construct_C2C(annotations, 'expression_only', true);
 
-
-%% Read Leadership board
-    Leadership = readtable('input/Dream/submission/leadership/synergy_matrix.csv', 'ReadRowNames', true);
-    pair_names = cellfun(@(x) strsplit(x, '.'), Leadership.Properties.RowNames, 'UniformOutput', false);
-    pair_idx = cell(numel(pair_names), 1);
-    for i = 1:numel(pair_names)
-        pair_idx{i}{1} = find(strcmp(pair_names{i}{1}, annotations.drugs.ChallengeName));
-        pair_idx{i}{2} = find(strcmp(pair_names{i}{2}, annotations.drugs.ChallengeName));        
-    end
-    sorted_CL = Leadership.Properties.VariableNames;
+% 
+% %% Read Leadership board
+%     Leadership = readtable('input/Dream/submission/ch2/leadership/synergy_matrix.csv', 'ReadRowNames', true);
+%     pair_names = cellfun(@(x) strsplit(x, '.'), Leadership.Properties.RowNames, 'UniformOutput', false);
+%     pair_idx = cell(numel(pair_names), 1);
+%     for i = 1:numel(pair_names)
+%         pair_idx{i}{1} = find(strcmp(pair_names{i}{1}, annotations.drugs.ChallengeName));
+%         pair_idx{i}{2} = find(strcmp(pair_names{i}{2}, annotations.drugs.ChallengeName));        
+%     end
+%     sorted_CL = Leadership.Properties.VariableNames;
 
 %% Read LINCS dataset
     % TODO: Draft file! CHECK CHECK CHECK, to make sure we selected
@@ -115,13 +117,12 @@ C2C = Construct_C2C(annotations, 'expression_only', true);
     % 5- Synergy among functions: 
     % a) nondirectionl (RWR over ACSN)
     
-    Synergy_score = 2;    
-    Confidence_mat = nan(size(Leadership));
-    for pIdx = 1:numel(pair_idx)
-        d1 = pair_idx{pIdx}{1};
-        d2 = pair_idx{pIdx}{2};
+    Confidence_mat = nan(size(Pairs, 1), size(annotations.cellLines, 1));
+    for pIdx = 1:size(Pairs, 1)
+        d1 = Pairs(pIdx, 1);
+        d2 = Pairs(pIdx, 2);
         for cIdx = 1:size(annotations.cellLines, 1)
-            Confidence_mat(pIdx, cIdx) = Synergy_score * rand(1);
+            Confidence_mat(pIdx, cIdx) = 2 * rand(1);
         end
     end
     
@@ -138,14 +139,14 @@ C2C = Construct_C2C(annotations, 'expression_only', true);
     fprintf(fd_syn, '\n');
     fprintf(fd_conf, '\n');    
     
-    for pIdx = 1:numel(pair_idx)
-        fprintf(fd_syn, '%s.%s', pair_names{pIdx}{1}, pair_names{pIdx}{2});
-        fprintf(fd_conf, '%s.%s', pair_names{pIdx}{1}, pair_names{pIdx}{2});
+    for pIdx = 1:size(Pairs, 1)
+        fprintf(fd_syn, '%s.%s', Pair_names{pIdx, 1}, Pair_names{pIdx, 2});
+        fprintf(fd_conf, '%s.%s', Pair_names{pIdx, 1}, Pair_names{pIdx, 2});
         for cIdx = 1:size(annotations.cellLines, 1)
             fprintf(fd_syn, ',%d', Confidence_mat(pIdx, cIdx) > synergy_threshold);
             fprintf(fd_conf, ',%f', Confidence_mat(pIdx, cIdx));
         end
-        if(pIdx ~= numel(pair_idx))
+        if(pIdx ~= size(Pairs, 1))
             fprintf(fd_syn, '\n');
             fprintf(fd_conf, '\n');    
         end
