@@ -90,9 +90,9 @@ C2C = Construct_C2C(annotations, 'expression_only', true);
         rows = find(ismember(Dream2LINCS.ID, LINCS_drugs{i}));        
         % TODO: Should we use aggregated scores in groups (probably), or all
         % genes without grouping (unlikely)?
-%         Expr_DS(rows, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
+        Expr_DS(rows, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
         % *** OR ***
-        Expr_DS(rows, cl_idx(i)) = {LINCS_expression_within_groups(:, i)};
+%         Expr_DS(rows, cl_idx(i)) = {LINCS_expression_within_groups(:, i)};
     end
     
 
