@@ -37,8 +37,10 @@ Pair_names = arrayfun(@(x) annotations.drugs.ChallengeName{x}, Pairs, 'UniformOu
 
 %% Drug-Drug Similarity Network
 % TODO: Gene targets for DNA, Methylation, ... targeting drugs
-D2D = Construct_D2D(ACSN, annotations);
+targetD2D = Construct_D2D(ACSN, annotations);
+stitchD2D = Construct_stitchD2D();
 
+D2D = targetD2D + stitchD2D ; 
 
 %% Cellline-Celline Similarity Network
 % TODO: Which networks to use? Should we also use co-methyl and co-mut? How
@@ -73,7 +75,7 @@ D2D = Construct_D2D(ACSN, annotations);
     
     [~, cl_idx] = ismember(LINCS_celllines, annotations.cellLines.Sanger_Name);
     % TODO: Check to make sure all ID mappings are correct
-    Dream2LINCS= readtable('/home/shahin/Dropbox/Dream/experiment/input/LINCS/final/preliminary_mapping.csv');
+    Dream2LINCS= readtable('./input/LINCS/final/preliminary_mapping.csv');
     
     transcriptional_gene_signature = cell(size(annotations.drugs, 1), size(annotations.cellLines, 1));
     for i = 1:size(LINCS_expression_matrix, 2)        
@@ -86,6 +88,11 @@ D2D = Construct_D2D(ACSN, annotations);
     end
     
 
+    %Propagate the expression per cell line and per drug to impute missing
+    %values
+    alpha = 0.1;
+    [D2D_prop_Exp,C2C_prop_Exp] = propagate_Expression(D2D, C2C , Expr_DS, alpha);
+    
     % TODO: Use 2 Layer method to impute missing values
 
 %% Expected signature of cancer drugs -- synergy among unctional classes

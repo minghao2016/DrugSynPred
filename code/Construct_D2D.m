@@ -72,7 +72,7 @@ end
         e_src = sparse(src_nodes, 1, 1, n, 1); e_src = e_src ./ sum(e_src);
         topological_signatures(:, i) = Q*e_src;
     end
-    
+    topological_signatures = topological_signatures / norm(topological_signatures);
     D2D = topological_signatures'*topological_signatures;
 end
 
