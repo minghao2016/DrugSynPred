@@ -28,15 +28,14 @@ function [Expr_DS_Prop_D2D,Expr_DS_Prop_C2C] = propagate_Expression(D2D, C2C , E
     geneExpression = zeros(numberofGenes,numberofCell);
     Expr_DS_Prop_C2C=cell(numberofDrug, numberofCell);
     for i=1:numberofDrug
-        known = find(~cellfun(@isempty,Expr_DS(i,:)));
+        known = find(~cellfun(@isempty,Expr_DS_Prop_D2D(i,:)));
         if(known)
-            geneExpression(:,known) = cell2mat(Expr_DS(i,known));
+            geneExpression(:,known) = cell2mat(Expr_DS_Prop_D2D(i,known));
             C2C_prop_Exp = propagation(C2C,alpha,geneExpression');
             for j=1:numberofCell
                 Expr_DS_Prop_C2C{i,j} = num2cell(C2C_prop_Exp(j,:));
             end
-        end
-         
+        end         
     end
     
 end
