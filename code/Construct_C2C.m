@@ -109,7 +109,7 @@ if(~exist('input/preprocessed/C2C.mat', 'file'))
     M = min(co_exp{1}, co_exp{2});
     sigma = std(nonzeros(tril(M)));
     [ii, jj, vv] = find(tril(M));
-    arrayfun(@(x) exp(x / (2*sigma)), vv);
+    vv = arrayfun(@(x) exp(x / (2*sigma)), vv);
     vv = vv / max(vv);
     combined_D = sparse(ii, jj, vv, m, m);
     combined_D = max(combined_D, combined_D');

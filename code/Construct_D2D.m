@@ -1,10 +1,12 @@
 function [ D2D ] = Construct_D2D(ACSN, annotations, varargin)
     params = inputParser;
-    params.addParamValue('alpha', 0.85, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
+    params.addParamValue('alpha', 0.99, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
+    params.addParamValue('lambda', 0.5, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
         
     params.parse(varargin{:});
     par = params.Results;
     
+    m = size(annotations.drugs, 1);
 % Read drug targets
 if(~exist('input/Drug2Target/WinDTome/WinDTome.mat', 'file'))
     tic; 
@@ -48,6 +50,11 @@ end
 % Exand targets using WinDTome
 
 
+% Read core D2D from STITCH network
+    stitch = load('input/STITCH/drug_comb_mapped');
+    coreD2D = sparse(stitch(:,1), stitch(:,2), stitch(:, 3), 119, 119);
+    coreD2D = max(coreD2D, coreD2D');
+    coreD2D = coreD2D ./ max(coreD2D(:));
 
 % Compute RWR over ACSN from targets to identify topological signature of each drug
     fprintf('Computing random walk matrix ...\n');
@@ -72,7 +79,23 @@ end
         e_src = sparse(src_nodes, 1, 1, n, 1); e_src = e_src ./ sum(e_src);
         topological_signatures(:, i) = Q*e_src;
     end
-    topological_signatures = topological_signatures / norm(topological_signatures);
-    D2D = topological_signatures'*topological_signatures;
+    targetD2D = topological_signatures'*topological_signatures;    
+    targetD2D = targetD2D ./ max(targetD2D(:));
+%     X=log10(topological_signatures);
+%     X(isinf(X)) = inf;
+%     X = X - min(nonzeros(X));
+%     X(isinf(X)) = 0;
+%     X(sum(X, 2) == 0, :) = [];
+%     Y = 1+corr(X);
+%     [ii, jj, vv] = find(tril(Y));
+%     sigma = std(vv);
+%     vv = arrayfun(@(x) exp(x / (10*sigma)), vv);
+%     vv = vv / max(vv);
+%     targetD2D = sparse(ii, jj, vv, m, m);
+%     targetD2D = max(targetD2D, targetD2D');
+%     
+%     X = Modified_zscore();
+    
+    D2D = par.lambda*coreD2D + (1-par.lambda)*targetD2D;    
 end
 

@@ -37,10 +37,7 @@ Pair_names = arrayfun(@(x) annotations.drugs.ChallengeName{x}, Pairs, 'UniformOu
 
 %% Drug-Drug Similarity Network
 % TODO: Gene targets for DNA, Methylation, ... targeting drugs
-targetD2D = Construct_D2D(ACSN, annotations);
-stitchD2D = Construct_stitchD2D();
-
-D2D = targetD2D + stitchD2D ; 
+D2D = Construct_D2D(ACSN, annotations);
 
 %% Cellline-Celline Similarity Network
 % TODO: Which networks to use? Should we also use co-methyl and co-mut? How
@@ -83,7 +80,7 @@ D2D = targetD2D + stitchD2D ;
         % TODO: Should we use aggregated scores in groups (probably), or all
         % genes without grouping (unlikely)?
 
-        Expr_DS(rows, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
+%         Expr_DS(rows, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
         % *** OR ***
 %         Expr_DS(rows, cl_idx(i)) = {LINCS_expression_within_groups(:, i)};
 
@@ -97,7 +94,7 @@ D2D = targetD2D + stitchD2D ;
     %Propagate the expression per cell line and per drug to impute missing
     %values
     alpha = 0.1;
-    [D2D_prop_Exp,C2C_prop_Exp] = propagate_Expression(D2D, C2C , Expr_DS, alpha);
+    [D2D_prop_Exp,C2C_prop_Exp] = propagate_Expression(D2D, C2C , transcriptional_gene_signature, alpha);
     
     % TODO: Use 2 Layer method to impute missing values
 
