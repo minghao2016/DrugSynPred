@@ -1,4 +1,4 @@
-function [ C2C ] = Construct_C2C( annotations, varargin )
+function [ C2C, Expressed_genes ] = Construct_C2C( annotations, varargin )
     params = inputParser;
     params.addParamValue('expression_only'           , true, @(x) islogical(x) ); % should we use expression data only to compute C2C?
     params.addParamValue('selection_method'           , 'Elbow',@(x) ischar(x) ); % Cutting method for identifying selective genes using entropy
@@ -39,6 +39,7 @@ if(~exist('input/preprocessed/C2C.mat', 'file'))
         table = textscan(fd, FormatString, 'Whitespace', '', 'Delimiter', '\t');
     end
     fclose(fd);
+    gene_names = table{2};    
     
     CCLE_mask = ismember(colNames, annotations.cellLines.CCLE_Name);
     table = table(CCLE_mask);
@@ -47,7 +48,8 @@ if(~exist('input/preprocessed/C2C.mat', 'file'))
     CCLE_expr = zeros(numel(table{1}), size(annotations.cellLines, 1));    
     [~, selected_cols] = ismember(colNames, annotations.cellLines.CCLE_Name);
     CCLE_expr(:, selected_cols) = cell2mat(table);
-
+    CCLE_expressed = arrayfun(@(col) gene_names((CCLE_expr(:, col) > 6)), 1:size(annotations.cellLines, 1), 'UniformOutput', false);
+    
     P = normalize(CCLE_expr, 'dim', 2, 'pnorm', 1); % Relative expression of each gene in different tissues
     I = spfun(@(x) -log2(x), P); % Information content of the relative expression of each gene   
     H = sum(P .* I, 2); % Shannon entropy of the relative expression -- overall tissue-specificity of genes. It has unit of "bits" and is between 0 -> completely selective) and log2(k) -> Uniform/HK gene    
@@ -72,17 +74,23 @@ if(~exist('input/preprocessed/C2C.mat', 'file'))
     
 
     % Co-expr matrix from Dream
-    [expr_table, cellLine_names] = my_tblread('input/Dream/molecular/gex.csv', ',');
+    [expr_table, cellLine_names, rowNames] = my_tblread('input/Dream/molecular/gex.csv', ',');
     cellLine_names = cellfun(@(x) x(2:end-1), cellLine_names, 'UniformOutput', false);
 
-    P = normalize(expr_table, 'dim', 2, 'pnorm', 1); % Relative expression of each gene in different tissues
+    Dream_expr = zeros(size(expr_table, 1), size(annotations.cellLines, 1));    
+    [~, selected_cols] = ismember(cellLine_names, annotations.cellLines.Sanger_Name);
+    Dream_expr(:, selected_cols) = expr_table;
+    Dream_expressed = arrayfun(@(col) rowNames((Dream_expr(:, col) > 5)), 1:size(annotations.cellLines, 1), 'UniformOutput', false);
+    Expressed_genes = cellfun(@(x, y) union(x, y), Dream_expressed, CCLE_expressed, 'UniformOutput', false);
+
+    P = normalize(Dream_expr, 'dim', 2, 'pnorm', 1); % Relative expression of each gene in different tissues
     I = spfun(@(x) -log2(x), P); % Information content of the relative expression of each gene   
     H = sum(P .* I, 2); % Shannon entropy of the relative expression -- overall tissue-specificity of genes. It has unit of "bits" and is between 0 -> completely selective) and log2(k) -> Uniform/HK gene    
     sorted_H = sort(H);
     sigSelective_no = cut(H, 'selection_method', par.selection_method, 'selection_half', 'bottom');
     entropy_cutoff = sorted_H(sigSelective_no);
     
-    expression_mat = expr_table(H < entropy_cutoff, :);
+    expression_mat = Dream_expr(H < entropy_cutoff, :);
     
     [CC, CC_pval] = corr(expression_mat);   
     CC_pval(CC < 0) = 1;
@@ -90,23 +98,22 @@ if(~exist('input/preprocessed/C2C.mat', 'file'))
     CC_pval(CC_pval == 0) = min(nonzeros(CC_pval));    
     S = -log10(CC_pval);
 
-%     [CC, CC_pval] = corr(expression_mat);   
-%     CC(CC_pval > 1e-10) = 0;
-%     CC(CC < 0) = 0;
-%     S = CC;
-    
-    
     [ii, jj, vv] = find(S);
     D = full(sparse(ii, jj, (max(vv) - vv) ./ (max(vv) - min(vv)), size(S, 1), size(S, 1)));
-    D = D - diag(diag(D));    
+    D = D - diag(diag(D));  
     D(isnan(D)) = 1;
-    
-   
-    co_exp{2} = ones(size(annotations.cellLines, 1));
-    [~, idx] = ismember(cellLine_names, annotations.cellLines.Sanger_Name);
-    co_exp{2}(idx, idx) = D; 
+    co_exp{2} = D; 
 
-    CellLine_distances{2} = min(co_exp{1}, co_exp{2});
+        
+    
+    M = min(co_exp{1}, co_exp{2});
+    sigma = std(nonzeros(tril(M)));
+    [ii, jj, vv] = find(tril(M));
+    arrayfun(@(x) exp(x / (2*sigma)), vv);
+    vv = vv / max(vv);
+    combined_D = sparse(ii, jj, vv, m, m);
+    combined_D = max(combined_D, combined_D');
+    CellLine_distances{2} = combined_D;
     
     if(par.expression_only == true)
         C2C = 1 - CellLine_distances{2};
@@ -121,7 +128,7 @@ if(~exist('input/preprocessed/C2C.mat', 'file'))
 %             class_avg = mean(nonzeros(tril(Breast(idx, idx))))
 %         end
         
-        save('input/preprocessed/C2C.mat', 'expr_table', 'H', 'C2C');        
+        save('input/preprocessed/C2C.mat', 'expr_table', 'H', 'C2C', 'Expressed_genes');        
         return;
     end
     
@@ -178,7 +185,7 @@ if(~exist('input/preprocessed/C2C.mat', 'file'))
 %     clustergram(C2C, 'RowLabels', annotations.cellLines.CCLE_Name, 'ColumnLabels', annotations.cellLines.CCLE_Name, 'Linkage', 'average', 'OPTIMALLEAFORDER', true)    
 
 
-    save('input/preprocessed/C2C.mat', 'expr_table', 'H', 'MAF', 'Census_genes', 'CellLine_distances', 'C2C');
+    save('input/preprocessed/C2C.mat', 'expr_table', 'H', 'MAF', 'Census_genes', 'CellLine_distances', 'C2C', 'Expressed_genes');
 
 else
     load('input/preprocessed/C2C.mat');

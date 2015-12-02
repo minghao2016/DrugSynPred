@@ -43,28 +43,20 @@ D2D = Construct_D2D(ACSN, annotations);
 %% Cellline-Celline Similarity Network
 % TODO: Which networks to use? Should we also use co-methyl and co-mut? How
 % to optimally combine using Mashup, GeneMANIA, or SNF?
-C2C = Construct_C2C(annotations, 'expression_only', true);
+[C2C, Expressed_genes] = Construct_C2C(annotations, 'expression_only', true);
 
-% 
-% %% Read Leadership board
-%     Leadership = readtable('input/Dream/submission/ch2/leadership/synergy_matrix.csv', 'ReadRowNames', true);
-%     pair_names = cellfun(@(x) strsplit(x, '.'), Leadership.Properties.RowNames, 'UniformOutput', false);
-%     pair_idx = cell(numel(pair_names), 1);
-%     for i = 1:numel(pair_names)
-%         pair_idx{i}{1} = find(strcmp(pair_names{i}{1}, annotations.drugs.ChallengeName));
-%         pair_idx{i}{2} = find(strcmp(pair_names{i}{2}, annotations.drugs.ChallengeName));        
-%     end
-%     sorted_CL = Leadership.Properties.VariableNames;
 
 %% Read LINCS dataset
     % TODO: Draft file! CHECK CHECK CHECK, to make sure we selected
     % the best drugs to assay
     LINCS_ds = parse_gct('input/LINCS/final/LINCS_subset.gct');
-   
+    class_gene_idx = cellfun(@(genes) find(ismember(LINCS_ds.rdesc(:, 7), genes)), ACSN.class_genes, 'UniformOutput', false) ;
+    
     LINCS_celllines = LINCS_ds.cdesc(:, 1);
     LINCS_celllines(strcmp(LINCS_celllines, 'BT20')) = {'BT-20'};
     LINCS_celllines(strcmp(LINCS_celllines, 'HT29')) = {'HT-29'};    
     LINCS_celllines(strcmp(LINCS_celllines, 'MDAMB231')) = {'MDA-MB-231'};    
+    LINCS_celllines(strcmp(LINCS_celllines, 'HS578T')) = {'Hs-578-T'};    
     
     LINCS_drugs = LINCS_ds.cdesc(:, 7);
     LINCS_expression_matrix = LINCS_ds.mat; % TODO: Should we column normalize to ensure constant transcriptional activity for each drug?
@@ -83,19 +75,77 @@ C2C = Construct_C2C(annotations, 'expression_only', true);
     % TODO: Check to make sure all ID mappings are correct
     Dream2LINCS= readtable('/home/shahin/Dropbox/Dream/experiment/input/LINCS/final/preliminary_mapping.csv');
     
-    Expr_DS = cell(size(annotations.drugs, 1), size(annotations.cellLines, 1));
+    transcriptional_gene_signature = cell(size(annotations.drugs, 1), size(annotations.cellLines, 1));
     for i = 1:size(LINCS_expression_matrix, 2)        
         rows = find(ismember(Dream2LINCS.ID, LINCS_drugs{i}));        
         % TODO: Should we use aggregated scores in groups (probably), or all
         % genes without grouping (unlikely)?
-%         Expr_DS(rows, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
+        transcriptional_gene_signature(rows, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
         % *** OR ***
-        Expr_DS(rows, cl_idx(i)) = {LINCS_expression_within_groups(:, i)};
+%         transcriptional_gene_signature(rows, cl_idx(i)) = {LINCS_expression_within_groups(:, i)};
     end
     
 
     % TODO: Use 2 Layer method to impute missing values
 
+%% Expected signature of cancer drugs -- synergy among unctional classes
+    load('/home/shahin/Dropbox/Dream/experiment/input/LINCS/final/LINCS_Class_gene_expressions_Z2.mat');
+    x = cell2mat(cellfun(@(class_expr) quantile(sum(class_expr, 1), [.05, 0.5, 0.95]) ./ std(sum(class_expr, 1)), XXX, 'UniformOutput', false));
+    delta = x(:, 3) - abs(x(:, 1));
+    func_synergy_weight = delta ./ norm(delta, 1);
+    x_report = [ACSN.class_names, num2cell(100*func_synergy_weight)];
+    [~, perm] = sort(delta);
+    x_report = x_report(perm, :);
+    
+    X = cell2mat(cellfun(@(class_expr) sum(class_expr, 1) ./ std(sum(class_expr, 1)), XXX, 'UniformOutput', false))';
+    [CC, pval] = corr(X);
+    clustergram(-CC, 'RowLabels', ACSN.class_names, 'ColumnLabels', ACSN.class_names, 'Linkage', 'average', 'OPTIMALLEAFORDER', true, 'Standardize', 1);
+
+%% Compute topological gene signatures
+    
+    alpha = 0.85;
+    n = size(ACSN.A, 1);
+    W = ACSN.A;       
+    D = diag(sum(W));
+    L = D - W;
+    lambda = alpha / (1 - alpha);
+    X = inv((speye(n) + lambda*L));
+    
+    for j = 1:size(annotations.cellLines)
+        fprintf('Cell Line %s ...\n', annotations.cellLines.Sanger_Name{j});
+        
+        % Construct cell type-specific network
+        v_score = cellfun(@(v) nnz(ismember(v, Expressed_genes{j})) / numel(v), ACSN.vertex_genes);        
+        smoothed_penalty = X*v_score; 
+
+        CL_A = bsxfun(@times, W, smoothed_penalty'); % Penalize rows (sources)            
+        CL_A = bsxfun(@times, W, smoothed_penalty); % Penalize columns (destinations)            
+
+        
+        % Perform random walk on cell-type-scpecific network starting from
+        % the targets of each drug
+        P = CL_A'*spdiags(spfun(@(x) 1./x, sum(CL_A, 2)), 0, n, n);
+        e_T = ones(1, n);    
+        d_T = e_T - e_T*P;
+        P = P + diag(d_T);
+        Q = (1-alpha).*inv(eye(n) - alpha*P);
+    
+        for i = 1:size(annotations.drugs, 1)
+            fprintf('\tDrug %s ...\n', annotations.drugs.ChallengeName{i});
+            primary_targets = annotations.drugs.Target{i};
+            src_nodes = find(cellfun(@(x) nnz(ismember(primary_targets, x)), ACSN.vertex_genes));
+            if(numel(src_nodes) == 0)
+                continue;
+            end
+            e_src = sparse(src_nodes, 1, 1, n, 1); e_src = e_src ./ sum(e_src);
+            topological_gene_signature{i, j} = Q*e_src;
+        end
+    end
+    
+    
+    % Handling the dangling nodes ...
+
+    
     
 %% Compute Synergy scores
     % TODO: Synergy prediction
@@ -117,14 +167,38 @@ C2C = Construct_C2C(annotations, 'expression_only', true);
     % 5- Synergy among functions: 
     % a) nondirectionl (RWR over ACSN)
     
+    
     Confidence_mat = nan(size(Pairs, 1), size(annotations.cellLines, 1));
     for pIdx = 1:size(Pairs, 1)
         d1 = Pairs(pIdx, 1);
         d2 = Pairs(pIdx, 2);
-        for cIdx = 1:size(annotations.cellLines, 1)
-            Confidence_mat(pIdx, cIdx) = 2 * rand(1);
+        for cIdx = 1:size(annotations.cellLines, 1)            
+            if( isempty(transcriptional_gene_signature{d1, cIdx}) || isempty(transcriptional_gene_signature{d2, cIdx}) )
+                continue;
+            end
+            
+            S1 = cellfun(@(rows) transcriptional_gene_signature{d1, cIdx}(rows) ,class_gene_idx, 'UniformOutput', false);
+            S2 = cellfun(@(rows) transcriptional_gene_signature{d2, cIdx}(rows) ,class_gene_idx, 'UniformOutput', false);
+            FSyn = cell2mat(cellfun(@(s1, s2) (nanmean((abs(s1)+abs(s2))./(max(abs(s1), abs(s2)))) - 1)*(1 - abs(corr(s1, s2))), S1, S2, 'UniformOutput', false));
+            synergy_score = nanmean(FSyn); % or sum(func_synergy_weight.*FSyn), where func_synergy_weight is the normalized directional importance of each class.
+
+            % make sure how it affects scaling the synergy later
+%             synergy_score = synergy_score * Mono.Drug_sensitivity(d1) * Mono.Drug_sensitivity(d2); 
+            
+            %TODO: Scaling by max is bad because it scales minor changes in
+            %a class close to 1
+            
+            Confidence_mat(pIdx, cIdx) = synergy_score;
         end
     end
+
+    vals = nonzeros(Confidence_mat);
+    vals(isnan(vals) | isinf(vals)) = [];
+    syn_threshold = quantile(vals, 0.8); % 50% of elements are predicted as synergic. This % is estimated from training data
+    
+    challenge_threshold = 30;    
+    syn_factor = challenge_threshold/syn_threshold;
+    Confidence_mat = Confidence_mat * syn_factor;
     
 
 %% Export
