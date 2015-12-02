@@ -82,15 +82,15 @@ D2D = targetD2D + stitchD2D ;
         rows = find(ismember(Dream2LINCS.ID, LINCS_drugs{i}));        
         % TODO: Should we use aggregated scores in groups (probably), or all
         % genes without grouping (unlikely)?
-<<<<<<< HEAD
+
         Expr_DS(rows, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
         % *** OR ***
 %         Expr_DS(rows, cl_idx(i)) = {LINCS_expression_within_groups(:, i)};
-=======
+
         transcriptional_gene_signature(rows, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
         % *** OR ***
 %         transcriptional_gene_signature(rows, cl_idx(i)) = {LINCS_expression_within_groups(:, i)};
->>>>>>> 1173d27ad61204bc89f5f6919ca5ae7cd1ab362d
+
     end
     
 
