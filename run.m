@@ -15,11 +15,13 @@
 
 
 %% Read Monotherapy data and impute missing values based on Dual Layer method
-    % [ Mono ] = read_MonoTherapy(annotations, 'input/Dream/synergy/ch2_leaderBoard_monoTherapy.csv' );
-    [ Mono, Pairs ] = read_MonoTherapy(annotations, 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv' );
-    Pair_names = arrayfun(@(x) annotations.drugs.ChallengeName{x}, Pairs, 'UniformOutput', false);
+%     [ Mono ] = read_allMonoTherapy( annotations, 'input/Dream/synergy/' );
+    [ Mono ] = read_singleMonoTherapy( annotations, 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv' );
+    [Pairs, Pair_names, Pair_synergy, Pair_quality] = readPairs( annotations, 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv' );
+    
+    
 
-    X = Mono.Drug_sensitivity';
+    X = Mono.Drug_sensitivity;
     X(isnan(X) | isinf(X)) = 0;
 %     [ii, jj, vv] = find(Mono.IC50);
 %     sigma = std(vv);
@@ -35,7 +37,7 @@
     end
     Y = 1000* Y ./ (max(Y(:)));
     
-    Z = Mono.Synergy;
+    Z = Pair_synergy;
     Z(Z < 0) = 0;
 %     [ii, jj, vv] = find(Z);
 %     ind = sub2ind(size(Z), ii, jj);
