@@ -19,7 +19,28 @@
     [ Mono, Pairs ] = read_MonoTherapy(annotations, 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv' );
     Pair_names = arrayfun(@(x) annotations.drugs.ChallengeName{x}, Pairs, 'UniformOutput', false);
 
+    X = Mono.Drug_sensitivity';
+    X(isnan(X) | isinf(X)) = 0;
+%     [ii, jj, vv] = find(Mono.IC50);
+%     sigma = std(vv);
+%     vv = exp(vv / (2*sigma));
+%     vv = vv ./ max(vv);
+%     X = full(sparse(ii, jj, vv, size(annotations.cellLines, 1), size(annotations.drugs, 1)))';    
+    X = normalize(X, 'dim', 2);
     
+    for i = 1:size(Pairs, 1)
+        for j = 1:size(annotations.cellLines, 1)
+            Y(i, j) = (X(Pairs(i, 1), j) * X(Pairs(i, 2), j));
+        end
+    end
+    Y = 1000* Y ./ (max(Y(:)));
+    
+    Z = Mono.Synergy;
+    Z(Z < 0) = 0;
+%     [ii, jj, vv] = find(Z);
+%     ind = sub2ind(size(Z), ii, jj);
+%     corr(vv, Y(ind))
+    [cc, pval] = corr(Z(:), Y(:), 'type', 'Spearman')
 %% TODO: Can we use MonoTherapy data as a source for computing D2D?
 %     X = Mono.Drug_sensitivity; X(isnan(X)) = 0;
 %     Y = double(logical(X));
@@ -51,7 +72,9 @@
 
 
 %% Read LINCS dataset and compute transcriptional gene signatures
-%     [ transcriptional_gene_signature, transc_class_gene_idx ] = computeTransSig( annotations, ACSN );
+    [ transcriptional_gene_signature, transc_class_gene_idx ] = computeTransSig( annotations, ACSN );
+    [D2D_prop_Exp,C2C_prop_Exp] = propagate_Expression(D2D, C2C , transcriptional_gene_signature, 0.1);   
+    % Cross-validate by masking 2 cell lines or 10 drugs
 
     
 %% Expected signature of cancer drugs -- synergy among unctional classes

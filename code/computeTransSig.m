@@ -29,14 +29,6 @@ function     [ transcriptional_gene_signature, transc_class_gene_idx ] = compute
     for i = 1:size(LINCS_expression_matrix, 2)        
         drug_row_mask = ismember(Dream2LINCS.ID, LINCS_drugs{i});        
         transcriptional_gene_signature(drug_row_mask, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
-    end
-    
-
-%     %Propagate the expression per cell line and per drug to impute missing values
-%     alpha = 0.1;
-%     [D2D_prop_Exp,C2C_prop_Exp] = propagate_Expression(D2D, C2C , transcriptional_gene_signature, alpha);   
-%     
-%     
-    % Cross-validate by masking 2 cell lines or 10 drugs
+    end   
 end
 

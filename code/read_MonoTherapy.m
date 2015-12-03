@@ -3,13 +3,6 @@ function [ Mono, Pairs ] = read_MonoTherapy( annotations, fname )
     if(~exist('input/preprocessed/Mono.mat', 'file'))
         fprintf('Importing Mono therapy data ...\n');
         % Read Mono therapy
-        Mono.Synergy = -inf(size(annotations.drugs, 1), size(annotations.drugs, 1));
-        Mono.Quality = -inf(size(annotations.drugs, 1), size(annotations.drugs, 1));
-        Mono.IC50 = inf(size(annotations.cellLines, 1), size(annotations.drugs, 1));
-        Mono.EMax = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
-        Mono.H = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
-        Mono.Max_C = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
-
         T = readtable(fname, 'TreatAsEmpty', 'NA');
         [~, CL_idx] = ismember(T.CELL_LINE, annotations.cellLines.Sanger_Name);
         [~, Drug_idx_A] = ismember(T.COMPOUND_A, annotations.drugs.ChallengeName);
@@ -17,10 +10,19 @@ function [ Mono, Pairs ] = read_MonoTherapy( annotations, fname )
 
         Pairs = unique([Drug_idx_A, Drug_idx_B], 'rows');
 
+%         Mono.Synergy = -inf(size(annotations.drugs, 1), size(annotations.drugs, 1));
+        Mono.Synergy = -inf(size(Pairs, 1), size(annotations.cellLines, 1));
+        Mono.Quality = -inf(size(annotations.drugs, 1), size(annotations.drugs, 1));
+        Mono.IC50 = inf(size(annotations.cellLines, 1), size(annotations.drugs, 1));
+        Mono.EMax = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
+        Mono.H = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
+        Mono.Max_C = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
 
         for i = 1:size(T, 1)
             if(~isnan(T.SYNERGY_SCORE(i)))
-                Mono.Synergy(Drug_idx_A(i), Drug_idx_B(i)) = T.SYNERGY_SCORE(i);
+%                 Mono.Synergy(Drug_idx_A(i), Drug_idx_B(i)) = T.SYNERGY_SCORE(i);
+                pair_idx = find(Pairs(:, 1) == Drug_idx_A(i) & Pairs(:, 2) == Drug_idx_B(i));
+                Mono.Synergy(pair_idx, CL_idx(i)) = T.SYNERGY_SCORE(i);
             end
             if(~isnan(T.QA(i)))
                 Mono.Quality(Drug_idx_A(i), Drug_idx_B(i)) = T.QA(i);
@@ -40,7 +42,7 @@ function [ Mono, Pairs ] = read_MonoTherapy( annotations, fname )
         end
 
         Mono.IC50(Mono.IC50==inf) = nan;
-        Mono.Synergy = max(Mono.Synergy, Mono.Synergy');
+%         Mono.Synergy = max(Mono.Synergy, Mono.Synergy');
         Mono.Quality = max(Mono.Quality, Mono.Quality');
         
         % TODO: Impute missing values based on Dual Layer method
@@ -73,6 +75,7 @@ function [ Mono, Pairs ] = read_MonoTherapy( annotations, fname )
                 end
             end
         end
+
 
         %     [ii, jj] = find(~isnan(Mono.Drug_sensitivity));
         %     vv = Mono.Drug_sensitivity(sub2ind(size(Mono.Drug_sensitivity), ii, jj));
