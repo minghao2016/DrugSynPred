@@ -73,7 +73,7 @@
 
 %% Read LINCS dataset and compute transcriptional gene signatures
     [ transcriptional_gene_signature, transc_class_gene_idx ] = computeTransSig( annotations, ACSN );
-    [D2D_prop_Exp,C2C_prop_Exp] = propagate_Expression(D2D, C2C , transcriptional_gene_signature, 0.1);   
+    prop_Exp = propagate_Expression(D2D, C2C , transcriptional_gene_signature, 0.1);   
     % Cross-validate by masking 2 cell lines or 10 drugs
 
     

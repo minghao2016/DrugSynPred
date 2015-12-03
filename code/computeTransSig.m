@@ -1,4 +1,4 @@
-function     [ transcriptional_gene_signature, transc_class_gene_idx , prop_Exp] = computeTransSig( annotations, ACSN, varargin)
+function     [ transcriptional_gene_signature, transc_class_gene_idx ] = computeTransSig( annotations, ACSN, varargin)
     params = inputParser;
     params.addParamValue('max_iter', 5, @(x) isscalar(x) & x > 0 & x <=1 ); % for double-propagation
     params.parse(varargin{:});
