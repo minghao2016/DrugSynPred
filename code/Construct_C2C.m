@@ -1,4 +1,4 @@
-function [ C2C, Expressed_genes ] = Construct_C2C( annotations, varargin )
+function [ C2C, NodeWeights ] = Construct_C2C( annotations, ACSN, varargin )
     params = inputParser;
     params.addParamValue('expression_only'           , true, @(x) islogical(x) ); % should we use expression data only to compute C2C?
     params.addParamValue('selection_method'           , 'Elbow',@(x) ischar(x) ); % Cutting method for identifying selective genes using entropy
@@ -13,6 +13,7 @@ function [ C2C, Expressed_genes ] = Construct_C2C( annotations, varargin )
     m = size(annotations.cellLines, 1); % # of cell lines
     n = size(annotations.drugs, 1); % # of drugs
     
+    NodeWeights = ones(size(ACSN.A, 1), m)./m;
     CellLine_distances = cell(3, 1);
 
     if(~exist('input/preprocessed/C2C.mat', 'file'))    
@@ -41,7 +42,7 @@ function [ C2C, Expressed_genes ] = Construct_C2C( annotations, varargin )
             table = textscan(fd, FormatString, 'Whitespace', '', 'Delimiter', '\t');
         end
         fclose(fd);
-        gene_names = table{2};    
+        CCLE_gene_names = table{2};    
 
         CCLE_mask = ismember(colNames, annotations.cellLines.CCLE_Name);
         table = table(CCLE_mask);
@@ -50,16 +51,17 @@ function [ C2C, Expressed_genes ] = Construct_C2C( annotations, varargin )
         CCLE_expr = zeros(numel(table{1}), size(annotations.cellLines, 1));    
         [~, selected_cols] = ismember(colNames, annotations.cellLines.CCLE_Name);
         CCLE_expr(:, selected_cols) = cell2mat(table);
-        CCLE_expressed = arrayfun(@(col) gene_names((CCLE_expr(:, col) > 6)), 1:size(annotations.cellLines, 1), 'UniformOutput', false);
+        
 
-        P = normalize(CCLE_expr, 'dim', 2, 'pnorm', 1); % Relative expression of each gene in different tissues
-        I = spfun(@(x) -log2(x), P); % Information content of the relative expression of each gene   
-        H = sum(P .* I, 2); % Shannon entropy of the relative expression -- overall tissue-specificity of genes. It has unit of "bits" and is between 0 -> completely selective) and log2(k) -> Uniform/HK gene    
-        sorted_H = sort(H);
-        sigSelective_no = cut(H, 'selection_method', par.selection_method, 'selection_half', 'bottom');
+        CCLE_P = normalize(CCLE_expr, 'dim', 2, 'pnorm', 1); % Relative expression of each gene in different tissues
+        CCLE_I = spfun(@(x) -log2(x), CCLE_P); % Information content of the relative expression of each gene   
+        CCLE_H = sum(CCLE_P .* CCLE_I, 2); % Shannon entropy of the relative expression -- overall tissue-specificity of genes. It has unit of "bits" and is between 0 -> completely selective) and log2(k) -> Uniform/HK gene    
+        sorted_H = sort(CCLE_H);
+        sigSelective_no = cut(CCLE_H, 'selection_method', par.selection_method, 'selection_half', 'bottom');
         entropy_cutoff = sorted_H(sigSelective_no);
 
-        expression_mat = CCLE_expr(H < entropy_cutoff, :);
+     
+        expression_mat = CCLE_expr(CCLE_H < entropy_cutoff, :);
 
         [CC, CC_pval] = corr(expression_mat);   
         CC_pval(CC < 0) = 1;
@@ -73,26 +75,28 @@ function [ C2C, Expressed_genes ] = Construct_C2C( annotations, varargin )
         D(isnan(D)) = 1;
         co_exp{1} = D; 
 
+        [mask, idx] = ismember(CCLE_gene_names, ACSN.vertex_genes);
+        NodeWeights(idx(mask), :) = (NodeWeights(idx(mask), :) + CCLE_P(mask, :)) / 2;
 
 
         % Co-expr matrix from Dream
-        [expr_table, cellLine_names, rowNames] = my_tblread('input/Dream/molecular/gex.csv', ',');
+        [expr_table, cellLine_names, Dream_gene_names] = my_tblread('input/Dream/molecular/gex.csv', ',');
         cellLine_names = cellfun(@(x) x(2:end-1), cellLine_names, 'UniformOutput', false);
-
+        Dream_gene_names = cellfun(@(x) x(2:end-1), Dream_gene_names, 'UniformOutput', false);
+        
         Dream_expr = zeros(size(expr_table, 1), size(annotations.cellLines, 1));    
         [~, selected_cols] = ismember(cellLine_names, annotations.cellLines.Sanger_Name);
         Dream_expr(:, selected_cols) = expr_table;
-        Dream_expressed = arrayfun(@(col) rowNames((Dream_expr(:, col) > 5)), 1:size(annotations.cellLines, 1), 'UniformOutput', false);
-        Expressed_genes = cellfun(@(x, y) union(x, y), Dream_expressed, CCLE_expressed, 'UniformOutput', false);
+        
 
-        P = normalize(Dream_expr, 'dim', 2, 'pnorm', 1); % Relative expression of each gene in different tissues
-        I = spfun(@(x) -log2(x), P); % Information content of the relative expression of each gene   
-        H = sum(P .* I, 2); % Shannon entropy of the relative expression -- overall tissue-specificity of genes. It has unit of "bits" and is between 0 -> completely selective) and log2(k) -> Uniform/HK gene    
-        sorted_H = sort(H);
-        sigSelective_no = cut(H, 'selection_method', par.selection_method, 'selection_half', 'bottom');
+        Dream_P = normalize(Dream_expr, 'dim', 2, 'pnorm', 1); % Relative expression of each gene in different tissues
+        Dream_I = spfun(@(x) -log2(x), Dream_P); % Information content of the relative expression of each gene   
+        Dream_H = sum(Dream_P .* Dream_I, 2); % Shannon entropy of the relative expression -- overall tissue-specificity of genes. It has unit of "bits" and is between 0 -> completely selective) and log2(k) -> Uniform/HK gene    
+        sorted_H = sort(Dream_H);
+        sigSelective_no = cut(Dream_H, 'selection_method', par.selection_method, 'selection_half', 'bottom');
         entropy_cutoff = sorted_H(sigSelective_no);
 
-        expression_mat = Dream_expr(H < entropy_cutoff, :);
+        expression_mat = Dream_expr(Dream_H < entropy_cutoff, :);
 
         [CC, CC_pval] = corr(expression_mat);   
         CC_pval(CC < 0) = 1;
@@ -106,7 +110,9 @@ function [ C2C, Expressed_genes ] = Construct_C2C( annotations, varargin )
         D(isnan(D)) = 1;
         co_exp{2} = D; 
 
-
+        [mask, idx] = ismember(Dream_gene_names, ACSN.vertex_genes);
+        NodeWeights(idx(mask), :) = (2*NodeWeights(idx(mask), :) + Dream_P(mask, :)) / 3;
+        
 
         M = min(co_exp{1}, co_exp{2});
         sigma = std(nonzeros(tril(M)));
@@ -118,19 +124,9 @@ function [ C2C, Expressed_genes ] = Construct_C2C( annotations, varargin )
         CellLine_distances{2} = combined_D;
 
         if(par.expression_only == true)
-            C2C = 1 - CellLine_distances{2};
-
-    %         breast_subtype = {'BT-20','Basal';'BT-474','Luminal';'BT-549','Claudin-low';'HCC1143','Basal';'HCC1187','Basal';'HCC1395','Claudin-low';'HCC1419','Luminal';'HCC1428','Luminal';'HCC1806','Basal';'HCC1937','Basal';'HCC1954','Basal';'HCC38','Claudin-low';'HCC70','Basal';'Hs-578-T','Claudin-low';'MCF7','Luminal';'MDA-MB-157','Claudin-low';'MDA-MB-231','Claudin-low';'MDA-MB-361','Luminal';'MDA-MB-415','Luminal';'MDA-MB-436','Claudin-low';'MDA-MB-453','Luminal';'MDA-MB-468','Basal';'T47D','Luminal'}; % From Sichani or Heiser?
-    %         Breast = C2C(1:35, 1:35);            
-    %         avg = mean(nonzeros(tril(Breast)))
-    %         types = unique(breast_subtype(:, 2));
-    %         for i = 1:numel(types)
-    %             class_CLs = breast_subtype(strcmp(types{i}, breast_subtype(:, 2)), 1);            
-    %             [~, idx] = ismember(class_CLs, annotations.cellLines.Sanger_Name);
-    %             class_avg = mean(nonzeros(tril(Breast(idx, idx))))
-    %         end
-
-            save('input/preprocessed/C2C.mat', 'expr_table', 'H', 'C2C', 'Expressed_genes');        
+            C2C = corr(NodeWeights);
+%             C2C = 1 - CellLine_distances{2};
+            save('input/preprocessed/C2C.mat', 'C2C', 'NodeWeights');        
             return;
         end
 
@@ -187,11 +183,11 @@ function [ C2C, Expressed_genes ] = Construct_C2C( annotations, varargin )
     %     clustergram(C2C, 'RowLabels', annotations.cellLines.CCLE_Name, 'ColumnLabels', annotations.cellLines.CCLE_Name, 'Linkage', 'average', 'OPTIMALLEAFORDER', true)    
 
 
-        save('input/preprocessed/C2C.mat', 'expr_table', 'H', 'MAF', 'Census_genes', 'CellLine_distances', 'C2C', 'Expressed_genes');
+        save('input/preprocessed/C2C.mat', 'C2C', 'NodeWeights');
 
     else
         fprintf('Loading C2C ...\n');
-        load('input/preprocessed/C2C.mat', 'C2C', 'Expressed_genes');
+        load('input/preprocessed/C2C.mat', 'C2C', 'NodeWeights');
     end
 end
 

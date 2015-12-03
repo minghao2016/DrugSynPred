@@ -39,11 +39,11 @@
 %% Cellline-Celline Similarity Network
     % TODO: Which networks to use? Should we also use co-methyl and co-mut? How
     % to optimally combine using Mashup, GeneMANIA, or SNF?
-    [C2C, Expressed_genes] = Construct_C2C(annotations, 'expression_only', true);
+    [C2C, NodeWeights] = Construct_C2C(annotations, ACSN, 'expression_only', true);
 
 
 %% Compute topological gene signatures using cell type-specific interactomes
-    [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( annotations, ACSN, Expressed_genes, 'alpha', 0.85, 'beta', 0.85);
+    [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( annotations, ACSN, NodeWeights, 'alpha', 0.85, 'beta', 0.85);
 
 %% Read LINCS dataset and compute transcriptional gene signatures
 %     [ transcriptional_gene_signature, transc_class_gene_idx ] = computeTransSig( annotations, ACSN );

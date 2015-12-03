@@ -1,4 +1,4 @@
-function [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( annotations, ACSN, Expressed_genes, varargin)
+function [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( annotations, ACSN, NodeWeights, varargin)
     params = inputParser;
     params.addParamValue('alpha', 0.85, @(x) isscalar(x) & x > 0 & x <=1 ); % RWR: for constructing TS network
     params.addParamValue('beta', 0.85, @(x) isscalar(x) & x > 0 & x <=1 ); % RWR: for computing topological signatures starting from drug targets
@@ -6,7 +6,7 @@ function [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( a
     params.parse(varargin{:});
     par = params.Results;
     
-    if(~exist('input/preprocessed/topoSigs.mat', 'file'))
+%     if(~exist('input/preprocessed/topoSigs.mat', 'file'))
         fprintf('Computing topological gene signatures ...\n');
         n = size(ACSN.A, 1);
         W = ACSN.A;       
@@ -21,15 +21,18 @@ function [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( a
             fprintf('\t%d- Cell Line %s ...\n', j, annotations.cellLines.Sanger_Name{j});
 
             % Construct cell type-specific network
-            v_score = cellfun(@(v) nnz(ismember(v, Expressed_genes{j})) / numel(v), ACSN.vertex_genes);        
+            fprintf('\tComputing cell-type specific network ...\n');
+            v_score = NodeWeights(:, j);       
             smoothed_penalty = X*v_score; 
-
+            smoothed_penalty = smoothed_penalty ./ norm(smoothed_penalty);
+            
             CL_A = bsxfun(@times, W, smoothed_penalty'); % Penalize rows (sources)            
-            CL_A = bsxfun(@times, W, smoothed_penalty); % Penalize columns (destinations)            
+            CL_A = bsxfun(@times, CL_A, smoothed_penalty); % Penalize columns (destinations)            
 
 
             % Perform random walk on cell-type-scpecific network starting from
             % the targets of each drug
+            fprintf('\tPrecomputing random-walk matrix ...\n');
             P = CL_A'*spdiags(spfun(@(x) 1./x, sum(CL_A, 2)), 0, n, n);
             e_T = ones(1, n);    
             d_T = e_T - e_T*P;
@@ -48,10 +51,10 @@ function [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( a
             end
         end
         topo_class_gene_idx = cellfun(@(genes) find(cellfun(@(v) nnz(ismember(v, genes)), ACSN.vertex_genes)), ACSN.class_genes, 'UniformOutput', false) ; % For topological
-        save('input/preprocessed/topoSigs.mat', 'topological_gene_signature', 'topo_class_gene_idx');
-    else
-        fprintf('Loading topological gene signatures ...\n');
-        load('input/preprocessed/topoSigs.mat', 'topological_gene_signature');
-    end
+%         save('input/preprocessed/topoSigs.mat', 'topological_gene_signature', 'topo_class_gene_idx');
+%     else
+%         fprintf('Loading topological gene signatures ...\n');
+%         load('input/preprocessed/topoSigs.mat', 'topological_gene_signature', 'topo_class_gene_idx');
+%     end
 end
 

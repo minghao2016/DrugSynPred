@@ -1,6 +1,6 @@
 function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
     params = inputParser;
-    params.addParamValue('alpha', 0.99, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
+    params.addParamValue('alpha', 0.85, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
     params.addParamValue('lambda', 0.5, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
         
     params.parse(varargin{:});
@@ -8,7 +8,7 @@ function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
     
     if(~exist('input/preprocessed/D2D.mat', 'file'))
         fprintf('Constructing D2D ...\n');
-        m = size(annotations.drugs, 1);
+%         m = size(annotations.drugs, 1);
     %     % Read drug targets
     %     if(~exist('input/Drug2Target/WinDTome/WinDTome.mat', 'file'))
     %         tic; 
@@ -78,20 +78,23 @@ function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
             e_src = sparse(src_nodes, 1, 1, n, 1); e_src = e_src ./ sum(e_src);
             topological_signatures(:, i) = Q*e_src;
         end
-        targetD2D = topological_signatures'*topological_signatures;    
-        targetD2D = targetD2D ./ max(targetD2D(:));
-    %     X=log10(topological_signatures);
-    %     X(isinf(X)) = inf;
-    %     X = X - min(nonzeros(X));
-    %     X(isinf(X)) = 0;
-    %     X(sum(X, 2) == 0, :) = [];
-    %     Y = 1+corr(X);
-    %     [ii, jj, vv] = find(tril(Y));
-    %     sigma = std(vv);
-    %     vv = arrayfun(@(x) exp(x / (10*sigma)), vv);
-    %     vv = vv / max(vv);
-    %     targetD2D = sparse(ii, jj, vv, m, m);
-    %     targetD2D = max(targetD2D, targetD2D');
+        targetD2D = partialcorr(topological_signatures, mean(topological_signatures, 2));
+        targetD2D(targetD2D < 0) = 0;
+        targetD2D = targetD2D - diag(diag(targetD2D));
+%         targetD2D = topological_signatures'*topological_signatures;            
+%         targetD2D = targetD2D ./ max(targetD2D(:));
+%         X=log10(topological_signatures);
+%         X(isinf(X)) = inf;
+%         X = X - min(nonzeros(X));
+%         X(isinf(X)) = 0;
+%         X(sum(X, 2) == 0, :) = [];
+%         Y = 1+corr(X);
+%         [ii, jj, vv] = find(tril(targetD2D));
+%         sigma = std(vv);
+%         vv = arrayfun(@(x) exp(x / (6*sigma)), vv);
+%         vv = vv / max(vv);
+%         targetD2D = sparse(ii, jj, vv, m, m);
+%         targetD2D = max(targetD2D, targetD2D');
     %     
     %     X = Modified_zscore();
 
