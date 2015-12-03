@@ -1,0 +1,59 @@
+function [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( annotations, ACSN, Expressed_genes, varargin)
+    params = inputParser;
+    params.addParamValue('alpha', 0.85, @(x) isscalar(x) & x > 0 & x <=1 ); % RWR: for constructing TS network
+    params.addParamValue('beta', 0.85, @(x) isscalar(x) & x > 0 & x <=1 ); % RWR: for computing topological signatures starting from drug targets
+        
+    params.parse(varargin{:});
+    par = params.Results;
+    
+%     if(~exist('input/preprocessed/topoSigs.mat', 'file'))
+        fprintf('Computing topological gene signatures ...\n');
+        n = size(ACSN.A, 1);
+        W = ACSN.A;       
+        D = diag(sum(W));
+        L = D - W;
+        lambda = par.alpha / (1 - par.alpha);
+        X = inv((speye(n) + lambda*L));
+
+        topological_gene_signature = cell(size(annotations.drugs, 1), size(annotations.cellLines, 1));
+
+        for j = 1:size(annotations.cellLines)
+            fprintf('\t%d- Cell Line %s ...\n', j, annotations.cellLines.Sanger_Name{j});
+
+            % Construct cell type-specific network
+%             v_score = cellfun(@(v) nnz(ismember(v, Expressed_genes{j})) / numel(v), ACSN.vertex_genes);        
+%             smoothed_penalty = X*v_score; 
+            smoothed_penalty = ones(n, 1) / n;        
+
+
+            CL_A = bsxfun(@times, W, smoothed_penalty'); % Penalize rows (sources)            
+            CL_A = bsxfun(@times, W, smoothed_penalty); % Penalize columns (destinations)            
+
+
+            % Perform random walk on cell-type-scpecific network starting from
+            % the targets of each drug
+            P = ACSN.A'*spdiags(spfun(@(x) 1./x, sum(ACSN.A, 2)), 0, n, n);
+            e_T = ones(1, n);    
+            d_T = e_T - e_T*P;
+            P = P + diag(d_T);
+            Q = (1-par.beta).*inv(eye(n) - par.beta*P);
+
+            for i = 1:size(annotations.drugs, 1)
+                fprintf('\t\t%d- Drug %s ...\n', i, annotations.drugs.ChallengeName{i});
+                primary_targets = annotations.drugs.Target{i};
+                src_nodes = find(cellfun(@(x) nnz(ismember(primary_targets, x)), ACSN.vertex_genes));
+                if(numel(src_nodes) == 0)
+                    continue;
+                end
+                e_src = sparse(src_nodes, 1, 1, n, 1); e_src = e_src ./ sum(e_src);
+                topological_gene_signature{i, j} = Q*e_src;
+            end
+        end
+        topo_class_gene_idx = cellfun(@(genes) find(cellfun(@(v) nnz(ismember(v, genes)), ACSN.vertex_genes)), ACSN.class_genes, 'UniformOutput', false) ; % For topological
+%         save('input/preprocessed/topoSigs.mat', 'topological_gene_signature', 'topo_class_gene_idx');
+%     else
+%         fprintf('Loading topological gene signatures ...\n');
+%         load('input/preprocessed/topoSigs.mat');
+%     end
+end
+
