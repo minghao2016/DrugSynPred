@@ -1,4 +1,4 @@
-function     [ transcriptional_gene_signature, transc_class_gene_idx ] = computeTransSig( annotations, ACSN, varargin)
+function     [ transcriptional_gene_signature, transc_class_gene_idx , prop_Exp] = computeTransSig( annotations, ACSN, varargin)
     params = inputParser;
     params.addParamValue('max_iter', 5, @(x) isscalar(x) & x > 0 & x <=1 ); % for double-propagation
     params.parse(varargin{:});
@@ -29,6 +29,7 @@ function     [ transcriptional_gene_signature, transc_class_gene_idx ] = compute
     for i = 1:size(LINCS_expression_matrix, 2)        
         drug_row_mask = ismember(Dream2LINCS.ID, LINCS_drugs{i});        
         transcriptional_gene_signature(drug_row_mask, cl_idx(i)) = {LINCS_expression_matrix(:, i)};
-    end   
+    end
+    
 end
 

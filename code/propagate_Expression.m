@@ -1,5 +1,5 @@
 
-function [Expr_DS_Prop_D2D,Expr_DS_Prop_C2C] = propagate_Expression(D2D, C2C , Expr_DS, alpha)
+function [Expr_DS_Prop] = propagate_Expression(D2D, C2C , Expr_DS, alpha)
 
     
     [numberofDrug numberofCell] = size(Expr_DS);
@@ -17,7 +17,7 @@ function [Expr_DS_Prop_D2D,Expr_DS_Prop_C2C] = propagate_Expression(D2D, C2C , E
             D2D_prop_Exp = propagation(D2D,alpha,geneExpression');
             
             for j=1:numberofDrug
-                Expr_DS_Prop_D2D{j,i} = num2cell(D2D_prop_Exp(j,:));
+                Expr_DS_Prop_D2D(j,i) = {(D2D_prop_Exp(j,:))};
             end
         end
        
@@ -26,14 +26,14 @@ function [Expr_DS_Prop_D2D,Expr_DS_Prop_C2C] = propagate_Expression(D2D, C2C , E
     fprintf('Propagating expression through cell similarity network ...\n');
     %Propagate through C2C
     geneExpression = zeros(numberofGenes,numberofCell);
-    Expr_DS_Prop_C2C=cell(numberofDrug, numberofCell);
+    Expr_DS_Prop=cell(numberofDrug, numberofCell);
     for i=1:numberofDrug
         known = find(~cellfun(@isempty,Expr_DS_Prop_D2D(i,:)));
         if(known)
-            geneExpression(:,known) = cell2mat(Expr_DS_Prop_D2D(i,known));
+            geneExpression(:,known) = cell2mat(Expr_DS_Prop_D2D(i,known)')';
             C2C_prop_Exp = propagation(C2C,alpha,geneExpression');
             for j=1:numberofCell
-                Expr_DS_Prop_C2C{i,j} = num2cell(C2C_prop_Exp(j,:));
+                Expr_DS_Prop(i,j) = {(C2C_prop_Exp(j,:))};
             end
         end         
     end
