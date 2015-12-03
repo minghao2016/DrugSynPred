@@ -6,14 +6,11 @@ function [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( a
     params.parse(varargin{:});
     par = params.Results;
     
-%     if(~exist('input/preprocessed/topoSigs.mat', 'file'))
+    fname = sprintf('input/preprocessed/topoSigs_beta=%.2f.mat', par.beta);
+    if(~exist(fname, 'file'))
         fprintf('Computing topological gene signatures ...\n');
         n = size(ACSN.A, 1);
         W = ACSN.A;       
-        D = diag(sum(W));
-        L = D - W;
-        lambda = par.alpha / (1 - par.alpha);
-        X = inv((speye(n) + lambda*L));
 
         topological_gene_signature = cell(size(annotations.drugs, 1), size(annotations.cellLines, 1));
 
@@ -23,13 +20,11 @@ function [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( a
             % Construct cell type-specific network
             fprintf('\tComputing cell-type specific network ...\n');
             v_score = NodeWeights(:, j);       
-            smoothed_penalty = X*v_score; 
-            smoothed_penalty = smoothed_penalty ./ norm(smoothed_penalty);
-            
+            smoothed_penalty = (v_score * size(annotations.cellLines, 1)).^2;
             CL_A = bsxfun(@times, W, smoothed_penalty'); % Penalize rows (sources)            
             CL_A = bsxfun(@times, CL_A, smoothed_penalty); % Penalize columns (destinations)            
 
-
+            
             % Perform random walk on cell-type-scpecific network starting from
             % the targets of each drug
             fprintf('\tPrecomputing random-walk matrix ...\n');
@@ -51,10 +46,10 @@ function [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( a
             end
         end
         topo_class_gene_idx = cellfun(@(genes) find(cellfun(@(v) nnz(ismember(v, genes)), ACSN.vertex_genes)), ACSN.class_genes, 'UniformOutput', false) ; % For topological
-%         save('input/preprocessed/topoSigs.mat', 'topological_gene_signature', 'topo_class_gene_idx');
-%     else
-%         fprintf('Loading topological gene signatures ...\n');
-%         load('input/preprocessed/topoSigs.mat', 'topological_gene_signature', 'topo_class_gene_idx');
-%     end
+        save(fname, 'topological_gene_signature', 'topo_class_gene_idx');
+    else
+        fprintf('Loading topological gene signatures ...\n');
+        load(fname, 'topological_gene_signature', 'topo_class_gene_idx');
+    end
 end
 

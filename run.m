@@ -43,7 +43,12 @@
 
 
 %% Compute topological gene signatures using cell type-specific interactomes
-    [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( annotations, ACSN, NodeWeights, 'alpha', 0.85, 'beta', 0.85);
+%     for beta = [0.01, 0.15, 0.5, 0.85, 0.99]
+%         [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( annotations, ACSN, NodeWeights, 'beta', beta);
+%     end
+
+    [ topological_gene_signature, topo_class_gene_idx ] = computeTopoSig( annotations, ACSN, NodeWeights, 'beta', 0.99);
+
 
 %% Read LINCS dataset and compute transcriptional gene signatures
 %     [ transcriptional_gene_signature, transc_class_gene_idx ] = computeTransSig( annotations, ACSN );
@@ -74,7 +79,7 @@
     
     Confidence_mat = nan(size(Pairs, 1), size(annotations.cellLines, 1));
     for pIdx = 1:size(Pairs, 1)
-        fprintf('Pair %d/ %d\n', i , size(Pairs, 1));
+        fprintf('Pair %d/ %d\n', pIdx , size(Pairs, 1));
         d1 = Pairs(pIdx, 1);
         d2 = Pairs(pIdx, 2);
         for cIdx = 1:size(annotations.cellLines, 1)   
@@ -84,7 +89,9 @@
             if( isempty(S1) || isempty(S2) )
                 continue;
             end
-            
+            empty_cells =  cellfun(@(x) isempty(x), S1) | cellfun(@(x) isempty(x), S2);
+            S1(empty_cells) = [];
+            S2(empty_cells) = [];
 
             FSyn = cell2mat(cellfun(@(s1, s2) (nanmean((abs(s1)+abs(s2))./(max(abs(s1), abs(s2)))) - 1)*(1 - abs(corr(s1, s2))), S1, S2, 'UniformOutput', false));
             synergy_score = nanmean(FSyn); % or sum(func_synergy_weight.*FSyn), where func_synergy_weight is the normalized directional importance of each class.

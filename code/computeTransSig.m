@@ -1,4 +1,4 @@
-function     [ transcriptional_gene_signature, transc_class_gene_idx ] = computeTransSig( annotations, varargin)
+function     [ transcriptional_gene_signature, transc_class_gene_idx ] = computeTransSig( annotations, ACSN, varargin)
     params = inputParser;
     params.addParamValue('max_iter', 5, @(x) isscalar(x) & x > 0 & x <=1 ); % for double-propagation
     params.parse(varargin{:});
@@ -7,6 +7,7 @@ function     [ transcriptional_gene_signature, transc_class_gene_idx ] = compute
     
     % TODO: Draft file! CHECK CHECK CHECK, to make sure we selected the best drugs to assay
     LINCS_ds = parse_gct('input/LINCS/final/LINCS_subset.gct');
+    LINCS_genes = LINCS_ds.rdesc(:, 7);
     transc_class_gene_idx = cellfun(@(genes) find(ismember(LINCS_genes, genes)), ACSN.class_genes, 'UniformOutput', false) ;
 
     LINCS_celllines = LINCS_ds.cdesc(:, 1);
@@ -31,11 +32,11 @@ function     [ transcriptional_gene_signature, transc_class_gene_idx ] = compute
     end
     
 
-    %Propagate the expression per cell line and per drug to impute missing values
-    alpha = 0.1;
-    [D2D_prop_Exp,C2C_prop_Exp] = propagate_Expression(D2D, C2C , transcriptional_gene_signature, alpha);   
-    
-    
+%     %Propagate the expression per cell line and per drug to impute missing values
+%     alpha = 0.1;
+%     [D2D_prop_Exp,C2C_prop_Exp] = propagate_Expression(D2D, C2C , transcriptional_gene_signature, alpha);   
+%     
+%     
     % Cross-validate by masking 2 cell lines or 10 drugs
 end
 

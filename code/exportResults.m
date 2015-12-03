@@ -2,7 +2,7 @@ function [  ] = exportResults( annotations, Pairs, Pair_names, Confidence_mat,  
     fprintf('Exporting results to %s ... \n', outPath);
     
     params = inputParser;
-    params.addParamValue('synergy_threshold', 30, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
+    params.addParamValue('synergy_threshold', 30, @(x) isscalar(x)); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
     params.parse(varargin{:});
     par = params.Results;
 

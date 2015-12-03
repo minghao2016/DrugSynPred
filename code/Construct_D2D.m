@@ -1,6 +1,6 @@
 function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
     params = inputParser;
-    params.addParamValue('alpha', 0.85, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
+    params.addParamValue('alpha', 0.9, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
     params.addParamValue('lambda', 0.5, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
         
     params.parse(varargin{:});
@@ -71,7 +71,8 @@ function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
         topological_signatures = zeros(n, size(annotations.drugs, 1));
         for i = 1:size(annotations.drugs, 1)
             primary_targets = annotations.drugs.Target{i};
-            src_nodes = find(cellfun(@(x) nnz(ismember(primary_targets, x)), ACSN.vertex_genes));
+            [~, src_nodes] = ismember(primary_targets, ACSN.vertex_genes);
+            src_nodes(~src_nodes) = [];
             if(numel(src_nodes) == 0)
                 continue;
             end
@@ -98,7 +99,8 @@ function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
     %     
     %     X = Modified_zscore();
 
-        D2D = par.lambda*coreD2D + (1-par.lambda)*targetD2D;  
+%         D2D = par.lambda*coreD2D + (1-par.lambda)*targetD2D;  
+        D2D = max(coreD2D, targetD2D);
 
         save('input/preprocessed/D2D.mat', 'D2D');
     else
