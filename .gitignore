@@ -1,3 +1,5 @@
 input/Dream/molecular
-*~
 *.mat
+*~
+.*
+output/predictions

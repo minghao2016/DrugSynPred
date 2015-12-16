@@ -125,6 +125,7 @@ function [ C2C, NodeWeights ] = Construct_C2C( annotations, ACSN, varargin )
 
         if(par.expression_only == true)
             C2C = corr(NodeWeights);
+            C2C(C2C < 0) = 0;
 %             C2C = 1 - CellLine_distances{2};
             save('input/preprocessed/C2C.mat', 'C2C', 'NodeWeights');        
             return;

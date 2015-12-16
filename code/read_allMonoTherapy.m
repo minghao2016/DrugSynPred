@@ -6,7 +6,7 @@ function [ allMono ] = read_allMonoTherapy( annotations, inPath )
         mono_files = dir(fullfile(inPath, 'ch*.csv'));        
 
         allMono.IC50 = inf(size(annotations.cellLines, 1), size(annotations.drugs, 1));
-        allMono.EMax = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
+        allMono.EMax = inf(size(annotations.cellLines, 1), size(annotations.drugs, 1));
         allMono.H = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
         allMono.Max_C = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
         
@@ -19,13 +19,13 @@ function [ allMono ] = read_allMonoTherapy( annotations, inPath )
             [~, Drug_idx_B] = ismember(T.COMPOUND_B, annotations.drugs.ChallengeName);
             for i = 1:size(T, 1)
                 
-                if( T.IC50_A(i) < allMono.IC50(CL_idx(i), Drug_idx_A(i)) )
+                if( T.IC50_A(i) < allMono.IC50(CL_idx(i), Drug_idx_A(i)) && allMono.EMax(CL_idx(i), Drug_idx_A(i)) > T.Einf_A(i))
                     allMono.IC50(CL_idx(i), Drug_idx_A(i)) = T.IC50_A(i);
                     allMono.EMax(CL_idx(i), Drug_idx_A(i)) = T.Einf_A(i);
                     allMono.H(CL_idx(i), Drug_idx_A(i)) = T.H_A(i);        
                     allMono.Max_C(CL_idx(i), Drug_idx_A(i)) = T.MAX_CONC_A(i);        
                 end
-                if( T.IC50_B(i) < allMono.IC50(CL_idx(i), Drug_idx_B(i)) )
+                if( T.IC50_B(i) < allMono.IC50(CL_idx(i), Drug_idx_B(i)) && allMono.EMax(CL_idx(i), Drug_idx_B(i)) > T.Einf_B(i) )
                     allMono.IC50(CL_idx(i), Drug_idx_B(i)) = T.IC50_B(i);
                     allMono.EMax(CL_idx(i), Drug_idx_B(i)) = T.Einf_B(i);
                     allMono.H(CL_idx(i), Drug_idx_B(i)) = T.H_B(i);        
@@ -37,6 +37,7 @@ function [ allMono ] = read_allMonoTherapy( annotations, inPath )
 
 
         allMono.IC50(allMono.IC50==inf) = nan;
+        allMono.EMax(allMono.EMax==inf) = nan;
 
         
         % TODO: Impute missing values based on Dual Layer method
@@ -77,11 +78,11 @@ function [ allMono ] = read_allMonoTherapy( annotations, inPath )
 
 %         allMono.Drug_sensitivity = (allMono.Drug_sensitivity - nanmax(nonzeros(allMono.Drug_sensitivity))) ./ (nanmin(nonzeros(allMono.Drug_sensitivity)) - nanmax(nonzeros(allMono.Drug_sensitivity)));
 
-        allMono.IC50 = allMono.IC50';
-        allMono.H = allMono.H';
-        allMono.EMax = allMono.EMax';
-        allMono.Max_C = allMono.Max_C';
-        allMono.Drug_sensitivity = allMono.Drug_sensitivity';
+        allMono.IC50 = num2cell(allMono.IC50');
+        allMono.H = num2cell(allMono.H');
+        allMono.EMax = num2cell(allMono.EMax');
+        allMono.Max_C = num2cell(allMono.Max_C');
+        allMono.Drug_sensitivity = num2cell(allMono.Drug_sensitivity');
 
         save('input/preprocessed/allMono.mat', 'allMono');
     else

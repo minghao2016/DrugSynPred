@@ -4,7 +4,7 @@ function [ Mono ] = read_singleMonoTherapy( annotations, fname )
     fprintf('Importing Mono therapy data ...\n');
     % Read Mono therapy
     Mono.IC50 = inf(size(annotations.cellLines, 1), size(annotations.drugs, 1));
-    Mono.EMax = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
+    Mono.EMax = inf(size(annotations.cellLines, 1), size(annotations.drugs, 1));
     Mono.H = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
     Mono.Max_C = nan(size(annotations.cellLines, 1), size(annotations.drugs, 1));
 
@@ -15,13 +15,13 @@ function [ Mono ] = read_singleMonoTherapy( annotations, fname )
     [~, Drug_idx_B] = ismember(T.COMPOUND_B, annotations.drugs.ChallengeName);
     for i = 1:size(T, 1)
 
-        if( T.IC50_A(i) < Mono.IC50(CL_idx(i), Drug_idx_A(i)) )
+        if( T.IC50_A(i) < Mono.IC50(CL_idx(i), Drug_idx_A(i)) && Mono.EMax(CL_idx(i), Drug_idx_A(i)) > T.Einf_A(i))
             Mono.IC50(CL_idx(i), Drug_idx_A(i)) = T.IC50_A(i);
             Mono.EMax(CL_idx(i), Drug_idx_A(i)) = T.Einf_A(i);
             Mono.H(CL_idx(i), Drug_idx_A(i)) = T.H_A(i);        
             Mono.Max_C(CL_idx(i), Drug_idx_A(i)) = T.MAX_CONC_A(i);        
         end
-        if( T.IC50_B(i) < Mono.IC50(CL_idx(i), Drug_idx_B(i)) )
+        if( T.IC50_B(i) < Mono.IC50(CL_idx(i), Drug_idx_B(i)) && Mono.EMax(CL_idx(i), Drug_idx_B(i)) > T.Einf_B(i) )
             Mono.IC50(CL_idx(i), Drug_idx_B(i)) = T.IC50_B(i);
             Mono.EMax(CL_idx(i), Drug_idx_B(i)) = T.Einf_B(i);
             Mono.H(CL_idx(i), Drug_idx_B(i)) = T.H_B(i);        
@@ -32,6 +32,7 @@ function [ Mono ] = read_singleMonoTherapy( annotations, fname )
 
 
     Mono.IC50(Mono.IC50==inf) = nan;
+    Mono.EMax(Mono.EMax==inf) = nan;
 
 
     % TODO: Impute missing values based on Dual Layer method
@@ -65,11 +66,11 @@ function [ Mono ] = read_singleMonoTherapy( annotations, fname )
         end
     end
 
-    Mono.IC50 = Mono.IC50';
-    Mono.H = Mono.H';
-    Mono.EMax = Mono.EMax';
-    Mono.Max_C = Mono.Max_C';
-    Mono.Drug_sensitivity = Mono.Drug_sensitivity';
+    Mono.IC50 = num2cell(Mono.IC50');
+    Mono.H = num2cell(Mono.H');
+    Mono.EMax = num2cell(Mono.EMax');
+    Mono.Max_C = num2cell(Mono.Max_C');
+    Mono.Drug_sensitivity = num2cell(Mono.Drug_sensitivity');
     
     %     [ii, jj] = find(~isnan(Mono.Drug_sensitivity));
     %     vv = Mono.Drug_sensitivity(sub2ind(size(Mono.Drug_sensitivity), ii, jj));

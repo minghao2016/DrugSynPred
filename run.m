@@ -18,8 +18,296 @@
 %     [ Mono ] = read_allMonoTherapy( annotations, 'input/Dream/synergy/' );
     [ Mono ] = read_singleMonoTherapy( annotations, 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv' );
     [Pairs, Pair_names, Pair_synergy, Pair_quality] = readPairs( annotations, 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv' );
+
+%%
+clear ZZ
+Z = Pair_synergy;
+Z(isinf(Z)) = 0;
+Z(Z < 0) = 0;
+for i = 1:size(Z, 1)
+    row = nonzeros(Z(i, :));
+    val = median(row);
+    if(~isempty(val))
+        ZZ(i, 1) = val;    
+    else
+        ZZ(i, 1) = 0;
+    end
+%     ZZ(i) = max(Z(i, :));    
+end    
+ZZ(isnan(ZZ)) = 0;
+
+%%
+fd = fopen('/home/shahin/Dropbox/Dream/experiment/refs/GeneticInteractions/SynLethDB_human.txt', 'r');
+C = textscan(fd, '%s %s');
+fclose(fd);
+SL_nodes = union(C{1}, C{2});
+[~, ii] = ismember(C{1}, SL_nodes);
+[~, jj] = ismember(C{2}, SL_nodes);
+SL_net = sparse(ii, jj, 1, numel(SL_nodes), numel(SL_nodes));
+SL_net = max(SL_net, SL_net');
+
+
+
+% fd = fopen('/home/shahin/Dropbox/Dream/experiment/refs/GeneticInteractions/SL.sif', 'r');
+% C = textscan(fd, '%s %s %s');
+% SL_nodes = union(C{1}, C{3});
+% [~, ii] = ismember(C{1}, SL_nodes);
+% [~, jj] = ismember(C{3}, SL_nodes);
+% SL_net = sparse(ii, jj, 1, numel(SL_nodes), numel(SL_nodes));
+% SL_net = max(SL_net, SL_net');
+
+% for i = 1:size(annotations.drugs, 1)
+%     [~, SL_matches] = ismember(annotations.drugs.Target{i}, SL_nodes);
+%     SL_matches(~SL_matches) = [];
+%     SL_size(i) = numel(SL_matches);
+% %     if(numel(SL_matches == 0))
+% %         continue;
+% %     end
+%     SL_subnet = SL_net(SL_matches, :);
+%     
+%     genes{i} = {};
+%     for j = 1:numel(SL_matches)
+%         genes{i} = union(genes{i}, SL_nodes(find(SL_subnet(j, :))));
+%     end    
+% end
+
+Syn = zeros(size(Pairs, 1), 1);
+for i = 1:size(Pairs, 1)
+    t1 = annotations.drugs.Target{Pairs(i, 1)};
+    [~, t1_idx] = ismember(t1, ACSN.vertex_names); 
+    t1_idx(~t1_idx) = [];
+    t1(~t1_idx) = [];
+    t1_subnet = ACSN.A(t1_idx, :);
+    N1 = [];
+    for j = 1:numel(t1_idx)
+        N1 = union(N1, find(t1_subnet(j, :)));
+    end
+    N1 = union(t1_idx, N1);
+    N1_names = ACSN.vertex_names(N1);
+    [~, SL_matches1] = ismember(N1_names, SL_nodes);
+    SL_matches1(~SL_matches1) = [];
+
+    
+    t2 = annotations.drugs.Target{Pairs(i, 2)};
+    [~, t2_idx] = ismember(t2, ACSN.vertex_names); 
+    t2_idx(~t2_idx) = [];
+    t2(~t2_idx) = [];
+    t2_subnet = ACSN.A(t2_idx, :);
+    N2 = [];
+    for j = 2:numel(t2_idx)
+        N2 = union(N2, find(t2_subnet(j, :)));
+    end
+    N2 = union(t2_idx, N2);
+    N2_names = ACSN.vertex_names(N2);
+    [~, SL_matches2] = ismember(N2_names, SL_nodes);
+    SL_matches2(~SL_matches2) = [];
+
+  
+    Syn(i) = nnz(SL_net(SL_matches1, SL_matches2));
+%     Syn(i) = max(numel(intersect(v1, SL_N2)), numel(intersect(v2, SL_N1)));
+    
+%     Syn(i) = numel(nonzeros(SL_net(SL_matches1, SL_matches2)));
+
+    
+%     
+%     
+%     Syn(i) = max(numel(intersect(v1, SL_N2)), numel(intersect(v2, SL_N1)));
+    %     Syn(i) = SL_size(Pairs(i, 1)) + SL_size(Pairs(i, 2));    
+end
+
+x1 = tiedrank(ZZ);
+x2 = tiedrank(Syn);
+[c, p] = corr(x1, x2)
+
+
+
+
+
+
+
+
+
+% Syn = zeros(size(Pairs, 1), 1);
+% for i = 1:size(Pairs, 1)
+%     t1 = annotations.drugs.Target{Pairs(i, 1)};
+%     [~, t1_idx] = ismember(t1, ACSN.vertex_names); 
+%     t1_idx(~t1_idx) = [];
+%     t1(~t1_idx) = [];
+%     t1_subnet = ACSN.A(t1_idx, :);
+%     N1 = [];
+%     for j = 1:numel(t1_idx)
+%         N1 = union(N1, find(t1_subnet(j, :)));
+%     end
+%     v1 = union(t1_idx, N1);
+%     v1_names = ACSN.vertex_names(v1);
+%     [~, SL_matches1] = ismember(v1_names, SL_nodes);
+%     SL_matches1(~SL_matches1) = [];
+%     
+%     
+%     SL_subnet = SL_net(SL_matches, :);    
+%     SL_N1_genes = {};
+%     for j = 1:numel(SL_matches)
+%         SL_N1_genes = union(SL_N1_genes, SL_nodes(find(SL_subnet(j, :))));
+%     end 
+%     [~, SL_N1] = ismember(SL_N1_genes, ACSN.vertex_genes);
+%     SL_N1(~SL_N1) = [];
+%     
+%     
+%     t2 = annotations.drugs.Target{Pairs(i, 2)};
+%     [~, t2_idx] = ismember(t2, ACSN.vertex_names); 
+%     t2_idx(~t2_idx) = [];
+%     t2(~t2_idx) = [];
+%     t2_subnet = ACSN.A(t2_idx, :);
+%     N2 = [];
+%     for j = 2:numel(t2_idx)
+%         N2 = union(N2, find(t2_subnet(j, :)));
+%     end
+%     v2 = union(t2_idx, N2);
+%     v2_names = ACSN.vertex_names(v2);
+%     [~, SL_matches2] = ismember(v2_names, SL_nodes);
+%     SL_matches2(~SL_matches2) = [];
+% 
+%     SL_subnet = SL_net(SL_matches, :);
+%     SL_N2_genes = {};
+%     for j = 2:numel(SL_matches)
+%         SL_N2_genes = union(SL_N2_genes, SL_nodes(find(SL_subnet(j, :))));
+%     end 
+%     [~, SL_N2] = ismember(SL_N2_genes, ACSN.vertex_genes);
+%     SL_N2(~SL_N2) = [];
+%     
+%     Syn(i) = max(numel(intersect(v1, SL_N2)), numel(intersect(v2, SL_N1)));
+%     
+% %     Syn(i) = numel(nonzeros(SL_net(SL_matches1, SL_matches2)));
+% 
+%     
+% %     
+% %     
+% %     Syn(i) = max(numel(intersect(v1, SL_N2)), numel(intersect(v2, SL_N1)));
+%     %     Syn(i) = SL_size(Pairs(i, 1)) + SL_size(Pairs(i, 2));    
+% end
+% 
+
+
+
+
+
+% Syn = zeros(size(Pairs, 1), 1);
+% for i = 1:size(Pairs, 1)
+%     t1 = annotations.drugs.Target{Pairs(i, 1)};
+%     [~, t1_idx] = ismember(t1, ACSN.vertex_names); 
+%     t1_idx(~t1_idx) = [];
+%     t1(~t1_idx) = [];
+%     t1_subnet = ACSN.A(t1_idx, :);
+%     N1 = [];
+%     for j = 1:numel(t1_idx)
+%         N1 = union(N1, find(t1_subnet(j, :)));
+%     end
+%     v1 = union(t1_idx, N1);
+%     v1_names = ACSN.vertex_names(v1);
+%     [~, SL_matches1] = ismember(v1_names, SL_nodes);
+%     SL_matches1(~SL_matches1) = [];
+%     [~, v1_SL_idx] = ismember(t1, SL_nodes);
+%     v1_SL_idx(~v1_SL_idx) = [];
+%     if(isempty(v1_SL_idx))
+%         continue;
+%     end
+%     
+%     
+%     
+%     t2 = annotations.drugs.Target{Pairs(i, 2)};
+%     [~, t2_idx] = ismember(t2, ACSN.vertex_names); 
+%     t2_idx(~t2_idx) = [];
+%     t2(~t2_idx) = [];
+%     t2_subnet = ACSN.A(t2_idx, :);
+%     N2 = [];
+%     for j = 2:numel(t2_idx)
+%         N2 = union(N2, find(t2_subnet(j, :)));
+%     end
+%     v2 = union(t2_idx, N2);
+%     v2_names = ACSN.vertex_names(v2);
+%     [~, SL_matches2] = ismember(v2_names, SL_nodes);
+%     SL_matches2(~SL_matches2) = [];
+%     [~, v2_SL_idx] = ismember(t2, SL_nodes);
+%     v2_SL_idx(~v2_SL_idx) = [];
+%     if(isempty(v2_SL_idx))
+%         continue;
+%     end
+%     
+%     Syn(i) = max(numel(nonzeros(SL_net(v1_SL_idx, SL_matches2))), numel(nonzeros(SL_net(v2_SL_idx, SL_matches1))));
+% end
+
+
+
+
+
+
+
+%%
+alpha = 0.85;
+n = size(ACSN.A, 1);
+e = ones(n, 1) ./ n;
+lambda = max(eigs(ACSN.A));
+A_org = ACSN.A ./ lambda;
+
+frows = [];
+for i = 1:numel(ACSN.class_names)
+    [~, crows] = ismember(ACSN.class_genes{i}, ACSN.vertex_genes);
+    frows = union(frows, crows);
+end
+frows(~frows) = [];
+
+for i = 86:size(Pairs, 1)
+    fprintf('%d- %s vs %s \n', i, annotations.drugs.ChallengeName{Pairs(i, 1)}, annotations.drugs.ChallengeName{Pairs(i, 2)});
+    t1 = annotations.drugs.Target{Pairs(i, 1)};
+    t2 = annotations.drugs.Target{Pairs(i, 2)};
+    
+    [~, t1_rows] = ismember(t1, ACSN.vertex_genes); t1_rows(t1_rows == 0) = [];
+    [~, t2_rows] = ismember(t2, ACSN.vertex_genes); t2_rows(t2_rows == 0) = [];
+   
+    A = A_org;
+    A(t1_rows, :) = 0;
+    A(:, t1_rows) = 0;
+    sig{i, 1} = (1-alpha).*(eye(n) - alpha*A)\e;
+    
+    A = A_org;
+    A(t2_rows, :) = 0;
+    A(:, t2_rows) = 0;
+    sig{i, 2} = (1-alpha).*(eye(n) - alpha*A)\e;
+   
+    A(t1_rows, :) = 0;
+    A(:, t1_rows) = 0;
+    sig{i, 3} = (1-alpha).*(eye(n) - alpha*A)\e;
+    
+    Delta = log(geomean([sig{i, 1}, sig{i, 2}], 2) ./ sig{i, 3});
+    fDelta = Delta(frows);    
+    
+    M(i) = nansum(Delta);
     
     
+    M2(i) = nansum(fDelta);
+    
+end
+
+
+for i = 1:size(Pairs, 1)
+    fprintf('%d- %s vs %s \n', i, annotations.drugs.ChallengeName{Pairs(i, 1)}, annotations.drugs.ChallengeName{Pairs(i, 2)});
+
+    Delta = log(max([sig{i, 1}, sig{i, 2}], [], 2) ./ sig{i, 3});
+%     Delta = sig{i, 3};
+
+    fDelta = Delta(frows);    
+
+    Delta(isnan(Delta) |isinf(Delta)) = [];
+    fDelta(isnan(fDelta) |isinf(fDelta)) = [];
+    
+    M(i) = nansum(Delta);
+    M2(i) = nansum(fDelta);   
+end
+
+
+
+[cc, pval] = corr(M2, ZZ)
+%%
 
     X = Mono.Drug_sensitivity;
     X(isnan(X) | isinf(X)) = 0;
