@@ -1,4 +1,4 @@
-function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
+function [ D2D, coreD2D, targetD2D, topological_signatures ] = Construct_D2D(annotations, interactome, varargin)
     params = inputParser;
     params.addParamValue('alpha', 0.9, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
     params.addParamValue('lambda', 0.5, @(x) isscalar(x) & x > 0 & x <=1 ); % Alpha parameter for random walk (larger alpha, deeper the length of random walks, i.e., alpha is the weight of topological similarity)
@@ -8,6 +8,7 @@ function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
     
     if(~exist('input/preprocessed/D2D.mat', 'file'))
         fprintf('Constructing D2D ...\n');
+    % Exand targets using WinDTome
 %         m = size(annotations.drugs, 1);
     %     % Read drug targets
     %     if(~exist('input/Drug2Target/WinDTome/WinDTome.mat', 'file'))
@@ -47,20 +48,18 @@ function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
     %     else
     %         load('input/Drug2Target/WinDTome/WinDTome.mat'); 
     %     end
-
-
-    % Exand targets using WinDTome
-
+    
 
     % Read core D2D from STITCH network
         stitch = load('input/STITCH/drug_comb_mapped');
         coreD2D = sparse(stitch(:,1), stitch(:,2), stitch(:, 3), 119, 119);
         coreD2D = max(coreD2D, coreD2D');
-        coreD2D = coreD2D ./ max(coreD2D(:));
+        coreD2D = full(coreD2D ./ max(coreD2D(:)));
+        coreD2D(~coreD2D) = nan;
 
-    % Compute RWR over ACSN from targets to identify topological signature of each drug
-        n = size(ACSN.A, 1);
-        P = ACSN.A'*spdiags(spfun(@(x) 1./x, sum(ACSN.A, 2)), 0, n, n);
+    % Compute RWR over interactome from targets to identify topological signature of each drug
+        n = size(interactome.A, 1);
+        P = interactome.A'*spdiags(spfun(@(x) 1./x, sum(interactome.A, 2)), 0, n, n);
 
         % Handling the dangling nodes ...
         e_T = ones(1, n);    
@@ -71,7 +70,7 @@ function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
         topological_signatures = zeros(n, size(annotations.drugs, 1));
         for i = 1:size(annotations.drugs, 1)
             primary_targets = annotations.drugs.Target{i};
-            [~, src_nodes] = ismember(primary_targets, ACSN.vertex_genes);
+            [~, src_nodes] = ismember(primary_targets, interactome.vertex_genes);
             src_nodes(~src_nodes) = [];
             if(numel(src_nodes) == 0)
                 continue;
@@ -80,8 +79,11 @@ function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
             topological_signatures(:, i) = Q*e_src;
         end
         targetD2D = partialcorr(topological_signatures, mean(topological_signatures, 2));
-        targetD2D(targetD2D < 0) = 0;
-        targetD2D = targetD2D - diag(diag(targetD2D));
+        pos_targetD2D = targetD2D;
+        pos_targetD2D(pos_targetD2D < 0) = nan;
+        pos_targetD2D = pos_targetD2D - diag(diag(pos_targetD2D));
+        
+        
 %         targetD2D = topological_signatures'*topological_signatures;            
 %         targetD2D = targetD2D ./ max(targetD2D(:));
 %         X=log10(topological_signatures);
@@ -100,9 +102,9 @@ function [ D2D ] = Construct_D2D(annotations, ACSN, varargin)
     %     X = Modified_zscore();
 
 %         D2D = par.lambda*coreD2D + (1-par.lambda)*targetD2D;  
-        D2D = max(coreD2D, targetD2D);
+        D2D = max(coreD2D, pos_targetD2D);
 
-        save('input/preprocessed/D2D.mat', 'D2D');
+        save('input/preprocessed/D2D.mat', 'D2D', 'coreD2D', 'targetD2D', 'topological_signatures');
     else
         fprintf('Loading D2D ...\n');
         load('input/preprocessed/D2D.mat');

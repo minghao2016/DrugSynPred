@@ -1,0 +1,55 @@
+
+C5.0 [Release 2.07 GPL Edition]  	Sat Dec 19 08:02:07 2015
+-------------------------------
+
+    Options:
+	Application `Dream_Sample13'
+	Rule-based classifiers
+	Winnow attributes
+
+Class specified by attribute `Synergy'
+
+Read 822 cases (6 attributes) from Dream_Sample13.data
+
+1 attribute winnowed
+Estimated importance of remaining attributes:
+
+     16%  MaxMaxC
+      1%  MinMaxC
+     <1%  MaxDrug_sensitivity
+     <1%  MinDrug_sensitivity
+
+Rules:
+
+Rule 1: (468/188, lift 1.2)
+	MaxMaxC <= -0.22337
+	->  class 0  [0.598]
+
+Rule 2: (354/131, lift 1.3)
+	MaxMaxC > -0.22337
+	->  class 1  [0.629]
+
+Default class: 0
+
+
+Evaluation on training data (822 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     2  319(38.8%)   <<
+
+
+	   (a)   (b)    <-classified as
+	  ----  ----
+	   280   131    (a): class 0
+	   188   223    (b): class 1
+
+
+	Attribute usage:
+
+	    100%  MaxMaxC
+
+
+Time: 0.0 secs

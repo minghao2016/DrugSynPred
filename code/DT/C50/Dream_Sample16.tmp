@@ -1,0 +1,18 @@
+Reading training data      
+Winnowing attributes       
+Constructing decision tree   ....................  (0 cases covered)
+Constructing decision tree   >>>>................  (177 cases covered)
+Constructing decision tree   >>>>>...............  (186 cases covered)
+Constructing decision tree   >>>>>>>>>>>.........  (462 cases covered)
+Constructing decision tree   >>>>>>>>>>>>>>>>>>>.  (795 cases covered)
+Constructing decision tree   >>>>>>>>>>>>>>>>>>>>  (819 cases covered)
+Simplifying decision tree    ....................  (0 cases covered)
+Simplifying decision tree    >>>>................  (177 cases covered)
+Simplifying decision tree    >>>>>...............  (186 cases covered)
+Simplifying decision tree    >>>>>>>>>>>.........  (462 cases covered)
+Simplifying decision tree    >>>>>>>>>>>>>>>>>>>>  (822 cases covered)
+Forming rules                ....................  (0 cases covered)
+Forming rules                >>>>>>>>>>>.........  (462 cases covered)
+Forming rules                >>>>>>>>>>>>>>>>>>>>  (822 cases covered)
+Selecting final rules        ....................  (0 refinements)
+Evaluating on training data

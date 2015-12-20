@@ -1,0 +1,89 @@
+
+C5.0 [Release 2.07 GPL Edition]  	Sat Dec 19 08:02:07 2015
+-------------------------------
+
+    Options:
+	Application `Dream_Sample3'
+	Rule-based classifiers
+	Winnow attributes
+
+Class specified by attribute `Synergy'
+
+Read 822 cases (6 attributes) from Dream_Sample3.data
+
+No attributes winnowed
+
+Rules:
+
+Rule 1: (8, lift 1.8)
+	MaxDrug_sensitivity <= -0.24982
+	MaxMaxC > -0.4113
+	MaxMaxC <= -0.4075
+	MinMaxC <= -0.88167
+	->  class 0  [0.900]
+
+Rule 2: (8/1, lift 1.6)
+	SL <= -0.52428
+	MaxMaxC > 0.15628
+	->  class 0  [0.800]
+
+Rule 3: (27/6, lift 1.5)
+	MaxMaxC > -0.4075
+	MaxMaxC <= -0.39422
+	MinMaxC > -0.88167
+	->  class 0  [0.759]
+
+Rule 4: (718/346, lift 1.0)
+	MinMaxC <= 0.18993
+	->  class 0  [0.518]
+
+Rule 5: (3, lift 1.6)
+	MaxMaxC <= -0.4075
+	MinMaxC > -0.88167
+	->  class 1  [0.800]
+
+Rule 6: (21/5, lift 1.5)
+	MaxDrug_sensitivity <= -0.15715
+	MinMaxC > -0.78425
+	MinMaxC <= -0.56776
+	->  class 1  [0.739]
+
+Rule 7: (235/89, lift 1.2)
+	SL > 0.30636
+	->  class 1  [0.620]
+
+Rule 8: (385/162, lift 1.2)
+	MaxMaxC > -0.22337
+	->  class 1  [0.579]
+
+Rule 9: (104/45, lift 1.1)
+	MinMaxC <= -0.88167
+	->  class 1  [0.566]
+
+Default class: 0
+
+
+Evaluation on training data (822 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     9  293(35.6%)   <<
+
+
+	   (a)   (b)    <-classified as
+	  ----  ----
+	   202   209    (a): class 0
+	    84   327    (b): class 1
+
+
+	Attribute usage:
+
+	     87%  MinMaxC
+	     51%  MaxMaxC
+	     30%  SL
+	      4%  MaxDrug_sensitivity
+
+
+Time: 0.0 secs

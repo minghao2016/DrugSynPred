@@ -1,0 +1,116 @@
+
+C5.0 [Release 2.07 GPL Edition]  	Sat Dec 19 08:02:07 2015
+-------------------------------
+
+    Options:
+	Application `Dream_Sample19'
+	Rule-based classifiers
+	Winnow attributes
+
+Class specified by attribute `Synergy'
+
+Read 822 cases (6 attributes) from Dream_Sample19.data
+
+No attributes winnowed
+
+Rules:
+
+Rule 1: (16/1, lift 1.8)
+	SL > -0.71464
+	MinDrug_sensitivity <= -0.66688
+	MaxMaxC > -0.4113
+	MaxMaxC <= -0.4075
+	->  class 0  [0.889]
+
+Rule 2: (6, lift 1.8)
+	MinDrug_sensitivity > -0.66715
+	MaxMaxC > -0.4075
+	MinMaxC <= -0.88167
+	->  class 0  [0.875]
+
+Rule 3: (16/2, lift 1.7)
+	SL > -0.15222
+	MinDrug_sensitivity <= -0.66715
+	MaxMaxC > -0.4113
+	MaxMaxC <= -0.39422
+	MinMaxC <= -0.88167
+	->  class 0  [0.833]
+
+Rule 4: (10/1, lift 1.7)
+	MinDrug_sensitivity <= -0.636
+	MaxMaxC <= -0.35625
+	MinMaxC > -0.86002
+	->  class 0  [0.833]
+
+Rule 5: (11/2, lift 1.5)
+	SL > -0.71464
+	MaxMaxC <= -0.39422
+	MinMaxC > -0.86002
+	->  class 0  [0.769]
+
+Rule 6: (32/10, lift 1.4)
+	MinDrug_sensitivity > -0.652
+	MinMaxC <= -0.86002
+	->  class 0  [0.676]
+
+Rule 7: (57/21, lift 1.3)
+	MaxDrug_sensitivity > 0.25753
+	MaxMaxC <= 0.15628
+	->  class 0  [0.627]
+
+Rule 8: (784/388, lift 1.0)
+	MinMaxC > -0.88924
+	->  class 0  [0.505]
+
+Rule 9: (4, lift 1.7)
+	MinDrug_sensitivity > -0.66688
+	MaxMaxC <= -0.4075
+	->  class 1  [0.833]
+
+Rule 10: (59/16, lift 1.4)
+	MinMaxC > -0.78425
+	MinMaxC <= -0.56776
+	->  class 1  [0.721]
+
+Rule 11: (251/86, lift 1.3)
+	MaxDrug_sensitivity <= 0.25753
+	MaxMaxC > -0.22337
+	MinMaxC > -0.86002
+	->  class 1  [0.656]
+
+Rule 12: (171/66, lift 1.2)
+	SL > 0.63516
+	->  class 1  [0.613]
+
+Rule 13: (378/168, lift 1.1)
+	MinMaxC <= -0.56776
+	->  class 1  [0.555]
+
+Default class: 0
+
+
+Evaluation on training data (822 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	    13  263(32.0%)   <<
+
+
+	   (a)   (b)    <-classified as
+	  ----  ----
+	   237   174    (a): class 0
+	    89   322    (b): class 1
+
+
+	Attribute usage:
+
+	    100%  MinMaxC
+	     43%  MaxMaxC
+	     37%  MaxDrug_sensitivity
+	     24%  SL
+	      9%  MinDrug_sensitivity
+
+
+Time: 0.0 secs

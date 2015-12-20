@@ -1,0 +1,7 @@
+id="See5/C5.0 2.07 GPL Edition 2015-12-19"
+entries="1"
+rules="2" default="0"
+conds="1" cover="458" ok="270" lift="1.17826" class="0"
+type="2" att="MaxMaxC" cut="-0.22337" result="<"
+conds="1" cover="364" ok="223" lift="1.22404" class="1"
+type="2" att="MaxMaxC" cut="-0.22337" result=">"

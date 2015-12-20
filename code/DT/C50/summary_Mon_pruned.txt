@@ -1,0 +1,129 @@
+	     89%  ProdIC50
+	     67%  MaxH
+	     62%  MaxMax_C
+
+	    100%  MinDrug_sensitivity
+	     92%  DeltaMax_C
+	     83%  MinMax_C
+	     63%  ProdEMax
+	     61%  MinEMax
+	     52%  MaxMax_C
+
+	    100%  ProdEMax
+	     88%  MinMax_C
+	     82%  MaxMax_C
+	     77%  MaxH
+	     64%  MinEMax
+	     55%  DeltaMax_C
+	     33%  MinH
+
+	    100%  MaxMax_C
+
+	     95%  MinIC50
+	     93%  MaxMax_C
+	     62%  MinMax_C
+
+	    100%  MinMax_C
+	    100%  MinDrug_sensitivity
+	     93%  DeltaMax_C
+	     92%  MaxMax_C
+	     67%  MinEMax
+	     52%  ProdEMax
+
+	     99%  MinDrug_sensitivity
+
+	    100%  ProdEMax
+	    100%  MinMax_C
+	     95%  MaxMax_C
+	     89%  DeltaEMax
+	     87%  DeltaMax_C
+	     81%  MinEMax
+	     74%  MaxH
+	     62%  MinDrug_sensitivity
+
+	    100%  MaxMax_C
+	    100%  MinMax_C
+	     90%  ProdEMax
+	     73%  SumMax_C
+
+	     88%  MaxMax_C
+	     58%  MaxH
+
+	    100%  MinMax_C
+	     90%  MaxMax_C
+	     62%  MaxH
+
+	    100%  ProdEMax
+	     98%  MaxMax_C
+	     94%  MinEMax
+	     58%  MaxH
+
+	    100%  MaxMax_C
+	    100%  MinDrug_sensitivity
+	     90%  DeltaMax_C
+	     66%  MinEMax
+	     65%  MinMax_C
+	     56%  MinIC50
+
+	    100%  ProdEMax
+	     97%  MaxH
+	     94%  MinMax_C
+	     91%  MaxMax_C
+
+------------------------------------------
+	    100%  MinMax_C
+	     73%  ProdEMax
+
+	     88%  MinIC50
+	     67%  MaxMax_C
+
+	     81%  MaxH
+	     79%  DeltaMax_C
+	     74%  MinMax_C
+
+	    100%  MinMax_C
+
+	     86%  MinIC50
+	     67%  MaxMax_C
+
+	    100%  MinDrug_sensitivity
+
+	    100%  DeltaMax_C
+	     95%  MinIC50
+	     88%  ProdMax_C
+	     82%  MaxH
+	     78%  MaxMax_C
+	     59%  ProdEMax
+	     56%  MinDrug_sensitivity
+
+	    100%  DeltaMax_C
+	     99%  MinMax_C
+	     99%  MinDrug_sensitivity
+	     72%  MinEMax
+
+	    100%  MaxMax_C
+
+	    100%  MinEMax
+	    100%  MaxMax_C
+	    100%  MinMax_C
+
+	    100%  MaxH
+	    100%  DeltaMax_C
+	    100%  MinMax_C
+	    100%  MinDrug_sensitivity
+	     78%  MinEMax
+
+	     99%  MinDrug_sensitivity
+	     93%  DeltaMax_C
+	     60%  ProdEMax
+
+	    100%  MaxMax_C
+
+	     88%  MaxMax_C
+	     58%  MaxH
+
+	     56%  MaxMax_C
+
+	    100%  MaxMax_C
+	     93%  MinEMax
+	     87%  DeltaMax_C

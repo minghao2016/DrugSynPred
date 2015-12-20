@@ -1,0 +1,108 @@
+﻿	(+)
+	MinMW > 513.6
+	MinMW <= 651.8
+
+	MaxMax_C <= 1 (+)
+
+	MinDrug_sensitivity > 94.274 (+)
+
+	MaxHBD <= 1 (-)
+
+	MinDrug_sensitivity > 82.3272 (+)
+	MinDrug_sensitivity <= 94.274 (-)
+
+---------------------------------
+	MaxLipinski > 0
+
+Rule 1: (1090/332, lift 1.0)
+	MinMW <= 513.6
+	->  class 0  [0.695]
+
+Rule 2: (103/43, lift 1.7)
+	MinMW > 513.6
+	->  class 1  [0.581]
+
+
+Rule 3: (55/17, lift 2.1)
+	MinMW > 543.5
+	MincLogP > 0.32
+	MinLipinski <= 2
+	->  class 1  [0.684]
+
+Rule 4: (40/13, lift 2.0)
+	MincLogP > -0.71
+	MincLogP <= 0.32
+	->  class 1  [0.667]
+
+Rule 2: (52/14, lift 2.2)
+	MinMW > 543.5
+	MinHBD <= 2
+	MinLipinski <= 2
+	->  class 1  [0.722]
+
+Rule 3: (157/60, lift 1.8)
+	MinHBA > 5
+	MaxHBD > 1
+	MinHBD <= 2
+	MincLogP > 0.59
+	MincLogP <= 3.88
+	MaxLipinski > 0
+	->  class 1  [0.616]
+
+Rule 4: (72/31, lift 1.7)
+	MinHBA <= 5
+	->  class 1  [0.568]
+
+Rule 5: (233/103, lift 1.7)
+	MaxHBD > 1
+	MinHBD <= 2
+	MincLogP > 0.59
+	MaxLipinski > 0
+	->  class 1  [0.557]
+
+Rule 4: (118/58, lift 1.5)
+	MinMW > 513.6
+	->  class 1  [0.508]
+
+Rule 1: (207/48, lift 1.1)
+	MaxHBD <= 1
+	->  class 0  [0.766]
+
+Rule 3: (222/91, lift 1.8)
+	MaxMW <= 651.8
+	MaxHBD > 1
+	MaxLipinski > 0
+	->  class 1  [0.589]
+
+Rule 4: (200/78, lift 1.8)
+	MaxHBD > 1
+	MaxcLogP <= 5.44
+	MincLogP > -0.71
+	MaxLipinski > 0
+	->  class 1  [0.609]
+
+Rule 3: (66/25, lift 1.9)
+	MinHBA <= 5
+	->  class 1  [0.618]
+
+Rule 2: (68/22, lift 2.0)
+	MinMW > 513.6
+	MinMW <= 651.8
+	->  class 1  [0.671]
+
+
+Rule 3: (224/93, lift 1.8)
+	MaxMW <= 651.8
+	MaxHBD > 1
+	MaxLipinski > 0
+	->  class 1  [0.584]
+
+Rule 2: (715/188, lift 1.1)
+	MaxLipinski <= 0
+	->  class 0  [0.736]
+
+Rule 3: (224/93, lift 1.8)
+	MaxMW <= 651.8
+	MaxHBD > 1
+	MaxLipinski > 0
+	->  class 1  [0.584]

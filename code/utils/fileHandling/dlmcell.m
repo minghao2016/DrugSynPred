@@ -70,6 +70,8 @@ for j = 1:size(cell_array,2)
         output{i,j} = '';
     % Check whether the content of cell i,j is
     % numeric and convert numbers to strings.
+    elseif isnan(cell_array{i,j}) 
+        output{i,j} = '?';
     elseif isnumeric(cell_array{i,j}) || islogical(cell_array{i,j})
         output{i,j} = num2str(cell_array{i,j}(1,1));
     
