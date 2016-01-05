@@ -1,101 +1,336 @@
 
-C5.0 [Release 2.07 GPL Edition]  	Sat Dec 19 08:02:07 2015
+C5.0 [Release 2.07 GPL Edition]  	Fri Dec 25 12:39:34 2015
 -------------------------------
 
     Options:
 	Application `Dream_Sample15'
 	Rule-based classifiers
 	Winnow attributes
+	Cross-validate using 10 folds
 
 Class specified by attribute `Synergy'
 
 Read 822 cases (6 attributes) from Dream_Sample15.data
 
-No attributes winnowed
+1 attribute winnowed
+Estimated importance of remaining attributes:
+
+     14%  Vert_Syn
+      1%  DrugEffect1
+      1%  NExpr1
+     <1%  DrugEffect2
+
+
+[ Fold 1 ]
 
 Rules:
 
-Rule 1: (20/4, lift 1.5)
-	MinDrug_sensitivity > -0.66221
-	MaxMaxC > -0.22337
-	MaxMaxC <= 0.15628
-	MinMaxC <= -0.86002
-	->  class 0  [0.773]
+Rule 1: (176/54, lift 1.4)
+	DrugEffect1 <= 62.5987
+	Vert_Syn <= 38.0865
+	->  class 0  [0.691]
 
-Rule 2: (449/188, lift 1.2)
-	MaxMaxC <= -0.22337
-	->  class 0  [0.581]
+Rule 2: (71/15, lift 1.6)
+	Vert_Syn > 38.0865
+	->  class 1  [0.781]
 
-Rule 3: (568/257, lift 1.1)
-	MaxDrug_sensitivity <= 0.0065632
-	MinMaxC > -0.88924
-	->  class 0  [0.547]
-
-Rule 4: (10/1, lift 1.7)
-	SL <= -0.28201
-	MinDrug_sensitivity <= -0.6716
-	MaxMaxC > -0.35625
-	MaxMaxC <= -0.22337
-	MinMaxC <= -0.56776
-	->  class 1  [0.833]
-
-Rule 5: (17/4, lift 1.5)
-	MaxMaxC <= -0.22337
-	MinMaxC > -0.78425
-	MinMaxC <= -0.56776
-	->  class 1  [0.737]
-
-Rule 6: (26/7, lift 1.4)
-	SL <= -0.71464
-	MaxMaxC <= -0.35625
-	->  class 1  [0.714]
-
-Rule 7: (38/11, lift 1.4)
-	MinDrug_sensitivity <= -0.44317
-	MaxMaxC > -0.35625
-	MaxMaxC <= -0.22337
-	MinMaxC > -0.86002
-	MinMaxC <= -0.56776
-	->  class 1  [0.700]
-
-Rule 8: (221/79, lift 1.3)
-	MaxMaxC > -0.22337
-	MinMaxC > -0.78425
-	->  class 1  [0.641]
-
-Rule 9: (30/11, lift 1.2)
-	MaxMaxC > 0.15628
-	->  class 1  [0.625]
-
-Rule 10: (385/175, lift 1.1)
-	MinMaxC <= -0.56776
-	->  class 1  [0.545]
+Rule 3: (542/246, lift 1.1)
+	DrugEffect1 > 62.5987
+	->  class 1  [0.546]
 
 Default class: 0
 
-
-Evaluation on training data (822 cases):
+Evaluation on hold-out data (82 cases):
 
 	        Rules     
 	  ----------------
 	    No      Errors
 
-	    10  278(33.8%)   <<
+	     3   37(45.1%)   <<
+
+
+[ Fold 2 ]
+
+Rules:
+
+Rule 1: (173/54, lift 1.4)
+	DrugEffect1 <= 62.5987
+	Vert_Syn <= 38.0865
+	->  class 0  [0.686]
+
+Rule 2: (69/15, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.775]
+
+Rule 3: (545/249, lift 1.1)
+	DrugEffect1 > 62.5987
+	->  class 1  [0.543]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   34(41.5%)   <<
+
+
+[ Fold 3 ]
+
+Rules:
+
+Rule 1: (153/44, lift 1.4)
+	DrugEffect1 <= 57.7289
+	Vert_Syn <= 38.0865
+	->  class 0  [0.710]
+
+Rule 2: (67/15, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.768]
+
+Rule 3: (570/260, lift 1.1)
+	DrugEffect1 > 57.7289
+	->  class 1  [0.544]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   38(46.3%)   <<
+
+
+[ Fold 4 ]
+
+Rules:
+
+Rule 1: (175/55, lift 1.4)
+	DrugEffect1 <= 63.3946
+	Vert_Syn <= 38.0865
+	->  class 0  [0.684]
+
+Rule 2: (73/16, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.773]
+
+Rule 3: (545/248, lift 1.1)
+	DrugEffect1 > 63.3946
+	->  class 1  [0.545]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   34(41.5%)   <<
+
+
+[ Fold 5 ]
+
+Rules:
+
+Rule 1: (31/5, lift 1.6)
+	Vert_Syn > 28.1392
+	Vert_Syn <= 38.0865
+	->  class 0  [0.818]
+
+Rule 2: (273/101, lift 1.3)
+	DrugEffect1 <= 81.2011
+	Vert_Syn <= 38.0865
+	->  class 0  [0.629]
+
+Rule 3: (67/14, lift 1.6)
+	Vert_Syn > 38.0865
+	->  class 1  [0.783]
+
+Rule 4: (440/196, lift 1.1)
+	DrugEffect1 > 81.2011
+	->  class 1  [0.554]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     4   35(42.7%)   <<
+
+
+[ Fold 6 ]
+
+Rules:
+
+Rule 1: (153/46, lift 1.4)
+	DrugEffect1 <= 57.7289
+	Vert_Syn <= 38.0865
+	->  class 0  [0.697]
+
+Rule 2: (69/13, lift 1.6)
+	Vert_Syn > 38.0865
+	->  class 1  [0.803]
+
+Rule 3: (567/261, lift 1.1)
+	DrugEffect1 > 57.7289
+	->  class 1  [0.540]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   34(41.5%)   <<
+
+
+[ Fold 7 ]
+
+Rules:
+
+Rule 1: (159/49, lift 1.4)
+	DrugEffect1 <= 57.7289
+	Vert_Syn <= 38.0865
+	->  class 0  [0.689]
+
+Rule 2: (64/13, lift 1.6)
+	Vert_Syn > 38.0865
+	->  class 1  [0.788]
+
+Rule 3: (563/258, lift 1.1)
+	DrugEffect1 > 57.7289
+	->  class 1  [0.542]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   34(41.5%)   <<
+
+
+[ Fold 8 ]
+
+Rules:
+
+Rule 1: (151/43, lift 1.4)
+	DrugEffect1 <= 57.2505
+	Vert_Syn <= 38.0865
+	->  class 0  [0.712]
+
+Rule 2: (74/15, lift 1.6)
+	Vert_Syn > 38.0865
+	->  class 1  [0.789]
+
+Rule 3: (570/260, lift 1.1)
+	DrugEffect1 > 57.2505
+	->  class 1  [0.544]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   39(47.6%)   <<
+
+
+[ Fold 9 ]
+
+Rules:
+
+Rule 1: (150/45, lift 1.4)
+	DrugEffect1 <= 57.7289
+	Vert_Syn <= 38.0865
+	->  class 0  [0.697]
+
+Rule 2: (74/16, lift 1.6)
+	Vert_Syn > 38.0865
+	->  class 1  [0.776]
+
+Rule 3: (569/263, lift 1.1)
+	DrugEffect1 > 57.7289
+	->  class 1  [0.538]
+
+Default class: 0
+
+Evaluation on hold-out data (83 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   33(39.8%)   <<
+
+
+[ Fold 10 ]
+
+Rules:
+
+Rule 1: (171/53, lift 1.4)
+	DrugEffect1 <= 62.5987
+	Vert_Syn <= 38.0865
+	->  class 0  [0.688]
+
+Rule 2: (65/12, lift 1.6)
+	Vert_Syn > 38.0865
+	->  class 1  [0.806]
+
+Rule 3: (547/249, lift 1.1)
+	DrugEffect1 > 62.5987
+	->  class 1  [0.545]
+
+Default class: 1
+
+Evaluation on hold-out data (83 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   35(42.2%)   <<
+
+
+[ Summary ]
+
+Fold	        Rules     
+----	  ----------------
+	    No      Errors
+
+   1	     3       45.1%
+   2	     3       41.5%
+   3	     3       46.3%
+   4	     3       41.5%
+   5	     4       42.7%
+   6	     3       41.5%
+   7	     3       41.5%
+   8	     3       47.6%
+   9	     3       39.8%
+  10	     3       42.2%
+
+  Mean	   3.1       42.9%
+  SE	   0.1        0.8%
 
 
 	   (a)   (b)    <-classified as
 	  ----  ----
-	   278   133    (a): class 0
-	   145   266    (b): class 1
-
-
-	Attribute usage:
-
-	    100%  MinMaxC
-	     86%  MaxMaxC
-	     69%  MaxDrug_sensitivity
-	      8%  MinDrug_sensitivity
-	      4%  SL
+	   128   283    (a): class 0
+	    70   341    (b): class 1
 
 
 Time: 0.0 secs

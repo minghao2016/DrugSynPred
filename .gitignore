@@ -3,3 +3,8 @@ input/Dream/molecular
 *~
 .*
 output/predictions
+input/CCLE/
+input/CL_RNASeq/
+input/SynLethDB/drug2target/
+input/SynLethDB/expression/
+

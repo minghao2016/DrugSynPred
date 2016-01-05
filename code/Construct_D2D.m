@@ -56,6 +56,7 @@ function [ D2D, coreD2D, targetD2D, topological_signatures ] = Construct_D2D(ann
         coreD2D = max(coreD2D, coreD2D');
         coreD2D = full(coreD2D ./ max(coreD2D(:)));
         coreD2D(~coreD2D) = nan;
+        coreD2D = coreD2D ./ nanmax(nonzeros(coreD2D));
 
     % Compute RWR over interactome from targets to identify topological signature of each drug
         n = size(interactome.A, 1);
@@ -78,11 +79,16 @@ function [ D2D, coreD2D, targetD2D, topological_signatures ] = Construct_D2D(ann
             e_src = sparse(src_nodes, 1, 1, n, 1); e_src = e_src ./ sum(e_src);
             topological_signatures(:, i) = Q*e_src;
         end
-        targetD2D = partialcorr(topological_signatures, mean(topological_signatures, 2));
+        TT = log10(topological_signatures);
+        TT(isinf(TT)) = 0;
+        TT(TT ~= 0) = TT(TT ~= 0) - min(nonzeros(TT));
+        targetD2D = partialcorr(TT, mean(TT, 2));
+        
+%         targetD2D = partialcorr(topological_signatures, mean(topological_signatures, 2));
         pos_targetD2D = targetD2D;
         pos_targetD2D(pos_targetD2D < 0) = nan;
         pos_targetD2D = pos_targetD2D - diag(diag(pos_targetD2D));
-        
+        pos_targetD2D = pos_targetD2D ./ nanmax(nonzeros(pos_targetD2D));
         
 %         targetD2D = topological_signatures'*topological_signatures;            
 %         targetD2D = targetD2D ./ max(targetD2D(:));
@@ -102,7 +108,8 @@ function [ D2D, coreD2D, targetD2D, topological_signatures ] = Construct_D2D(ann
     %     X = Modified_zscore();
 
 %         D2D = par.lambda*coreD2D + (1-par.lambda)*targetD2D;  
-        D2D = max(coreD2D, pos_targetD2D);
+        D2D = nanmax(coreD2D, pos_targetD2D);
+        D2D(isnan(D2D)) = 0;
 
         save('input/preprocessed/D2D.mat', 'D2D', 'coreD2D', 'targetD2D', 'topological_signatures');
     else

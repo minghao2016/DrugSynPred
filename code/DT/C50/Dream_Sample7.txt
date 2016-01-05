@@ -1,65 +1,339 @@
 
-C5.0 [Release 2.07 GPL Edition]  	Sat Dec 19 08:02:07 2015
+C5.0 [Release 2.07 GPL Edition]  	Fri Dec 25 12:39:34 2015
 -------------------------------
 
     Options:
 	Application `Dream_Sample7'
 	Rule-based classifiers
 	Winnow attributes
+	Cross-validate using 10 folds
 
 Class specified by attribute `Synergy'
 
 Read 822 cases (6 attributes) from Dream_Sample7.data
 
-2 attributes winnowed
+1 attribute winnowed
 Estimated importance of remaining attributes:
 
-     10%  MaxMaxC
-      3%  MaxDrug_sensitivity
-      3%  MinMaxC
+      3%  DrugEffect2
+      1%  NExpr2
+     <1%  DrugEffect1
+     <1%  Vert_Syn
+
+
+[ Fold 1 ]
 
 Rules:
 
-Rule 1: (248/89, lift 1.3)
-	MaxMaxC <= -0.22337
-	MinMaxC > -0.56776
-	->  class 0  [0.640]
+Rule 1: (283/99, lift 1.3)
+	DrugEffect1 <= 81.4901
+	Vert_Syn <= 38.0865
+	->  class 0  [0.649]
 
-Rule 2: (89/36, lift 1.2)
-	MaxMaxC <= -0.39422
-	->  class 0  [0.593]
+Rule 2: (73/17, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.760]
 
-Rule 3: (295/121, lift 1.2)
-	MaxMaxC > -0.39422
-	MinMaxC <= -0.56776
-	->  class 1  [0.589]
-
-Rule 4: (378/155, lift 1.2)
-	MaxMaxC > -0.22337
-	->  class 1  [0.589]
+Rule 3: (422/179, lift 1.2)
+	DrugEffect1 > 81.4901
+	->  class 1  [0.575]
 
 Default class: 0
 
-
-Evaluation on training data (822 cases):
+Evaluation on hold-out data (82 cases):
 
 	        Rules     
 	  ----------------
 	    No      Errors
 
-	     4  324(39.4%)   <<
+	     3   30(36.6%)   <<
+
+
+[ Fold 2 ]
+
+Rules:
+
+Rule 1: (291/100, lift 1.3)
+	DrugEffect1 <= 81.3213
+	Vert_Syn <= 38.0865
+	->  class 0  [0.655]
+
+Rule 2: (35/8, lift 1.5)
+	DrugEffect1 <= 81.3213
+	Vert_Syn > 38.0865
+	->  class 1  [0.757]
+
+Rule 3: (414/171, lift 1.2)
+	DrugEffect1 > 81.3213
+	->  class 1  [0.587]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   36(43.9%)   <<
+
+
+[ Fold 3 ]
+
+Rules:
+
+Rule 1: (275/95, lift 1.3)
+	DrugEffect1 <= 79.0488
+	Vert_Syn <= 38.0865
+	->  class 0  [0.653]
+
+Rule 2: (70/18, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.736]
+
+Rule 3: (432/181, lift 1.2)
+	DrugEffect1 > 79.0488
+	->  class 1  [0.581]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   31(37.8%)   <<
+
+
+[ Fold 4 ]
+
+Rules:
+
+Rule 1: (34/9, lift 1.4)
+	Vert_Syn > 27.9872
+	Vert_Syn <= 38.0865
+	->  class 0  [0.722]
+
+Rule 2: (270/91, lift 1.3)
+	DrugEffect1 <= 79.0488
+	Vert_Syn <= 38.0865
+	->  class 0  [0.662]
+
+Rule 3: (74/17, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.763]
+
+Rule 4: (436/183, lift 1.2)
+	DrugEffect1 > 79.0488
+	->  class 1  [0.580]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     4   35(42.7%)   <<
+
+
+[ Fold 5 ]
+
+Rules:
+
+Rule 1: (274/93, lift 1.3)
+	DrugEffect1 <= 79.0488
+	Vert_Syn <= 38.0865
+	->  class 0  [0.659]
+
+Rule 2: (71/18, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.740]
+
+Rule 3: (432/180, lift 1.2)
+	DrugEffect1 > 79.0488
+	->  class 1  [0.583]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   34(41.5%)   <<
+
+
+[ Fold 6 ]
+
+Rules:
+
+Rule 1: (272/91, lift 1.3)
+	DrugEffect1 <= 78.8334
+	Vert_Syn <= 38.0865
+	->  class 0  [0.664]
+
+Rule 2: (72/16, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.770]
+
+Rule 3: (433/182, lift 1.2)
+	DrugEffect1 > 78.8334
+	->  class 1  [0.579]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   37(45.1%)   <<
+
+
+[ Fold 7 ]
+
+Rules:
+
+Rule 1: (329/127, lift 1.2)
+	DrugEffect1 <= 81.3213
+	->  class 0  [0.613]
+
+Rule 2: (411/168, lift 1.2)
+	DrugEffect1 > 81.3213
+	->  class 1  [0.591]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     2   40(48.8%)   <<
+
+
+[ Fold 8 ]
+
+Rules:
+
+Rule 1: (21/4, lift 1.6)
+	DrugEffect1 > 81.3213
+	DrugEffect2 <= 11.1199
+	Vert_Syn <= 38.0865
+	->  class 0  [0.783]
+
+Rule 2: (286/99, lift 1.3)
+	DrugEffect1 <= 81.3213
+	Vert_Syn <= 38.0865
+	->  class 0  [0.653]
+
+Rule 3: (76/17, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.769]
+
+Rule 4: (395/158, lift 1.2)
+	DrugEffect1 > 81.3213
+	DrugEffect2 > 11.1199
+	->  class 1  [0.599]
+
+Default class: 0
+
+Evaluation on hold-out data (82 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     4   34(41.5%)   <<
+
+
+[ Fold 9 ]
+
+Rules:
+
+Rule 1: (269/95, lift 1.3)
+	DrugEffect1 <= 80.1994
+	Vert_Syn <= 38.0865
+	->  class 0  [0.646]
+
+Rule 2: (75/17, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.766]
+
+Rule 3: (435/188, lift 1.1)
+	DrugEffect1 > 80.1994
+	->  class 1  [0.568]
+
+Default class: 0
+
+Evaluation on hold-out data (83 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   25(30.1%)   <<
+
+
+[ Fold 10 ]
+
+Rules:
+
+Rule 1: (181/54, lift 1.4)
+	DrugEffect1 <= 63.6772
+	Vert_Syn <= 38.0865
+	->  class 0  [0.699]
+
+Rule 2: (68/15, lift 1.5)
+	Vert_Syn > 38.0865
+	->  class 1  [0.771]
+
+Rule 3: (532/235, lift 1.1)
+	DrugEffect1 > 63.6772
+	->  class 1  [0.558]
+
+Default class: 1
+
+Evaluation on hold-out data (83 cases):
+
+	        Rules     
+	  ----------------
+	    No      Errors
+
+	     3   37(44.6%)   <<
+
+
+[ Summary ]
+
+Fold	        Rules     
+----	  ----------------
+	    No      Errors
+
+   1	     3       36.6%
+   2	     3       43.9%
+   3	     3       37.8%
+   4	     4       42.7%
+   5	     3       41.5%
+   6	     3       45.1%
+   7	     2       48.8%
+   8	     4       41.5%
+   9	     3       30.1%
+  10	     3       44.6%
+
+  Mean	   3.1       41.3%
+  SE	   0.2        1.7%
 
 
 	   (a)   (b)    <-classified as
 	  ----  ----
-	   212   199    (a): class 0
-	   125   286    (b): class 1
-
-
-	Attribute usage:
-
-	    100%  MaxMaxC
-	     66%  MinMaxC
+	   193   218    (a): class 0
+	   121   290    (b): class 1
 
 
 Time: 0.0 secs

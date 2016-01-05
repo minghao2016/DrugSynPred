@@ -20,7 +20,7 @@ function [  ] = exportResults( annotations, Pairs, Pair_names, Confidence_mat,  
         fprintf(fd_syn, '%s.%s', Pair_names{pIdx, 1}, Pair_names{pIdx, 2});
         fprintf(fd_conf, '%s.%s', Pair_names{pIdx, 1}, Pair_names{pIdx, 2});
         for cIdx = 1:size(annotations.cellLines, 1)
-            fprintf(fd_syn, ',%d', Confidence_mat(pIdx, cIdx) >= par.synergy_threshold);
+            fprintf(fd_syn, ',%d', Confidence_mat(pIdx, cIdx) > par.synergy_threshold);
             fprintf(fd_conf, ',%f', Confidence_mat(pIdx, cIdx));
         end
         if(pIdx ~= size(Pairs, 1))

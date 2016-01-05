@@ -16,8 +16,10 @@ function [ fullX ] = fillinBlanks( X, C2C, D2D )
             row = empty_cells(r);
             estim = zeros(size(X(filled_cells(1), c)));
             w = 0;
+            weights = D2D(row, filled_cells);
+            weights = weights ./ sum(weights);
             for i = 1:numel(filled_cells)
-                estim = estim + D2D(row, filled_cells(i))*X{filled_cells(i), c};
+                estim = estim + weights(i)*X{filled_cells(i), c};
                 w = w +  D2D(row, filled_cells(i));
             end
             if(w ~= 0)
@@ -37,8 +39,10 @@ function [ fullX ] = fillinBlanks( X, C2C, D2D )
             col = empty_cells(c);
             estim = zeros(size(X(r, filled_cells(1))));
             w = 0;
+            weights = C2C(filled_cells, col);
+            weights = weights ./ sum(weights);
             for i = 1:numel(filled_cells)
-                estim = estim + C2C(filled_cells(i), col)*X{r, filled_cells(i)};
+                estim = estim + weights(i)*X{r, filled_cells(i)};
                 w = w +  D2D(filled_cells(i), col);
             end
             if(w ~= 0)

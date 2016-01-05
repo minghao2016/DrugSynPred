@@ -1,8 +1,8 @@
 Synergy.
 
 Synergy:	0,1.
-SL:	continuous.
-MaxDrug_sensitivity:	continuous.
-MinDrug_sensitivity:	continuous.
-MaxMaxC:	continuous.
-MinMaxC:	continuous.
+DrugEffect1:	continuous.
+NExpr1:	continuous.
+DrugEffect2:	continuous.
+NExpr2:	continuous.
+Vert_Syn:	continuous.
