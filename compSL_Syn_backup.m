@@ -12,9 +12,9 @@
         %% Read Monotherapy data
     %     fname = 'input/Dream/synergy/ch2_leaderBoard_monoTherapy.csv';
         fname = 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv';
-        [ Mono ] = read_allMonoTherapy( annotations, 'input/Dream/synergy/' ); %TODO: How to optimally combine replicates?
+    %     [ Mono ] = read_allMonoTherapy( annotations, 'input/Dream/synergy/' ); %TODO: How to optimally combine replicates?
 
-%         [ Mono ] = read_singleMonoTherapy( annotations, fname );
+        [ Mono ] = read_singleMonoTherapy( annotations, fname );
         [Pairs, Pair_names, Pair_synergy, Pair_quality] = readPairs( annotations, fname );
 %%
 %     [ interactome ] = readNetwork();
@@ -30,8 +30,7 @@
 %         Syn_drug1 = Pairs(Syn_pair_id, 1);
 %         Syn_drug2 = Pairs(Syn_pair_id, 2);
 %         ck = Syn_CL_id;
-%         Syn_labels = synergy_threshold <= Syn_vv;
-    %
+%         Syn_labels = synergy_threshold <= Syn_vv;   
     %%
     Drug_Effect = cell2mat(Mono.EMax);
     Drug_Effect(isnan(Drug_Effect)) = 100;
@@ -108,10 +107,8 @@
     % Only works AFTER computing Synergy scores. If we move it to the
     % beginning results are horrible
     [ interactome ] = readNetwork();
-   load('datasets', 'interactome');
-
-%     D2D = D2D_combined(annotations, interactome); % Construct_D2D(annotations, interactome);
-%     [C2C, NodeWeights] = Construct_C2C(annotations, interactome, 'expression_only', true);    
+    D2D = Construct_D2D(annotations, interactome);
+    [C2C, NodeWeights] = Construct_C2C(annotations, interactome, 'expression_only', true);    
     X = cell2mat(fillinBlanks(Mono.EMax, C2C, D2D));
     
     X(isempty(X) | isnan(X) | isinf(X)) = 0; 
@@ -126,15 +123,18 @@
     Z = zeros(size(Pairs, 1), size(annotations.cellLines, 1));
     for i = 1:size(Pairs, 1)
         for j = 1:size(annotations.cellLines, 1)
-            Z(i, j) = V{1}(i) * (X(Pairs(i, 1), j) * X(Pairs(i, 2), j));
+            Z(i, j) = V{1}(i) * max([X(Pairs(i, 1), j), X(Pairs(i, 2), j)], [], 2);
         end
     end    
 %     Z = Modified_zscore(Z')';
 %     Z(isnan(Z)) = 0;
 %     Z = Z ./ max(nonzeros(Z));
 
-    Z = 30*Z ./ prctile(nonzeros(Z), 95);   
-    outPath = fullfile('output', 'predictions', 'leaderBoard');        
-    exportResults( annotations, Pairs, Pair_names, Z, outPath, 'synergy_threshold', 14);
+%     Z = 30*Z ./ prctile(nonzeros(Z), 95);   
+%     outPath = fullfile('output', 'predictions', 'leaderBoard');        
+%     exportResults( annotations, Pairs, Pair_names, Z, outPath, 'synergy_threshold', 20);
 
+%     Z = 30*Z ./ prctile(nonzeros(Z), 95);   
+    outPath = fullfile('output', 'predictions', 'leaderBoard');        
+    exportResults( annotations, Pairs, Pair_names, Z, outPath, 'synergy_threshold', 0.037);
     

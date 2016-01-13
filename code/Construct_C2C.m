@@ -174,9 +174,9 @@ function [ C2C, NodeWeights ] = Construct_C2C( annotations, ACSN, varargin )
 
         W1 = affinityMatrix(CellLine_distances{1}, par.SNF_K, par.SNF_alpha);
         W2 = affinityMatrix(CellLine_distances{2}, par.SNF_K, par.SNF_alpha);
-        W3 = affinityMatrix(CellLine_distances{2}, par.SNF_K, par.SNF_alpha);
+        W3 = affinityMatrix(CellLine_distances{3}, par.SNF_K, par.SNF_alpha);
 
-        C2C = SNF({W2, W3}, par.SNF_K, par.SNF_alpha);
+        C2C = SNF({W2, W3}, par.SNF_K, 20, par.SNF_alpha);
 
         C2C = (C2C - min(nonzeros(C2C))) ./ (max(nonzeros(C2C)) - min(nonzeros(C2C)));
         C2C = C2C - diag(diag(C2C));

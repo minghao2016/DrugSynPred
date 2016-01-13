@@ -42,7 +42,7 @@ for ITER=1:t
 end
 
 W = Wsum/C;
-W = W./repmat(sum(W,2),1,n);;
+W = W./repmat(sum(W,2),1,n);
 W = (W +W'+eye(n))/2;
 end
 

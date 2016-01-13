@@ -9,8 +9,82 @@
     [~, CL_perm] = sort(annotations.cellLines.Tissue__General_);
     annotations.cellLines = annotations.cellLines(CL_perm, :);
 
+    if(~exist('datasets.mat', 'file'))
+        %% Read expression
+        [expr_table, cellLine_names, Dream_gene_names] = my_tblread('input/Dream/molecular/gex.csv', ',');
+        cellLine_names = cellfun(@(x) x(2:end-1), cellLine_names, 'UniformOutput', false);
+        Dream_gene_names = cellfun(@(x) x(2:end-1), Dream_gene_names, 'UniformOutput', false);
 
-    load datasets
+        Dream_expr = zeros(size(expr_table, 1), size(annotations.cellLines, 1));    
+        [~, selected_cols] = ismember(cellLine_names, annotations.cellLines.Sanger_Name);
+
+        Dream_expr(:, selected_cols) = expr_table; %zscore(expr_table, 0, 2);
+
+        drug_target_expr_indices = arrayfun(@(x) find(ismember(Dream_gene_names, annotations.drugs.Target{x})), 1:size(annotations.drugs, 1), 'UniformOutput', false);
+
+        %% Read Monotherapy data
+    %     fname = 'input/Dream/synergy/ch2_leaderBoard_monoTherapy.csv';
+        fname = 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv';
+    %     [ Mono ] = read_allMonoTherapy( annotations, 'input/Dream/synergy/' ); %TODO: How to optimally combine replicates?
+
+        [ Mono ] = read_singleMonoTherapy( annotations, fname );
+        [Pairs, Pair_names, Pair_synergy, Pair_quality] = readPairs( annotations, fname );
+
+    %%
+        synergy_threshold = 30;
+        X = Pair_synergy;
+        X(isinf(X)) = 0;
+        [Syn_pair_id, Syn_CL_id, Syn_vv] = find(X);
+        Syn_drug1 = Pairs(Syn_pair_id, 1);
+        Syn_drug2 = Pairs(Syn_pair_id, 2);
+        ck = Syn_CL_id;
+        Syn_labels = synergy_threshold <= Syn_vv;    
+
+    %% Read physical interactome
+        [ interactome ] = readNetwork();
+
+        drug_target_net_indices = arrayfun(@(x) find(ismember(interactome.vertex_names, annotations.drugs.Target{x})), 1:size(annotations.drugs, 1), 'UniformOutput', false);
+
+    %% Read GO annotations and map them to the interactome
+        fd = fopen('input/GO_subset/GO_annotations.txt', 'r');
+        C = textscan(fd, '%[^\t] GO:%d %s');
+        fclose(fd);
+
+        [vertex_mask, vertex_id] = ismember(C{1}, interactome.vertex_genes);
+        vertex_id = vertex_id(vertex_mask);
+        GO_id = C{2}(vertex_mask);
+        GO_annotations = cell(numel(interactome.vertex_genes), 1);
+        for i = 1:numel(GO_id)
+            GO_annotations{vertex_id(i)} = [GO_annotations{vertex_id(i)}; GO_id(i)];
+        end
+        total_GO = unique(GO_id);
+        interactome.vertex_annotations = GO_annotations;
+
+        pop_size = numel(total_GO);
+        SemSim = zeros(numel(interactome.vertex_genes));
+        for v = 1:numel(interactome.vertex_genes)
+            fprintf('%d\n', v);
+            for u = v+1:numel(interactome.vertex_genes)
+                success = numel(intersect(interactome.vertex_annotations{u}, interactome.vertex_annotations{v}));
+                SemSim(u, v) = -log10(hygecdf(success, pop_size, numel(interactome.vertex_annotations{u}), numel(interactome.vertex_annotations{v}), 'upper'));
+            end        
+        end
+        SemSim = max(SemSim, SemSim');    
+        SemSim(isinf(SemSim)) = 0;
+
+    %% Expand neighborhood of interactome vertices
+        interactome.Neighbors = arrayfun(@(v) find(interactome.A(v, :)), 1:numel(interactome.vertex_genes), 'UniformOutput', false)';    
+
+        interactome.Pruned_neighbors = arrayfun(@(v) union(v, interactome.Neighbors{v}(arrayfun(@(u) SemSim(u,v) > 10 , interactome.Neighbors{v}))), 1:numel(interactome.vertex_genes), 'UniformOutput', false)';
+
+
+
+
+        Drug_target_neighbors = cellfun(@(d) unique([interactome.Pruned_neighbors{d}]), drug_target_net_indices, 'UniformOutput', false)';
+        
+    else
+        load datasets
+    end
 
 %%
     fname = 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv';
@@ -78,6 +152,8 @@
     Drug_Effect(isnan(Drug_Effect)) = 100;
     Drug_Effect = 100 - Drug_Effect; % effectiveness of drug in cell-lines
 
+%     Drug_Effect = cell2mat(Mono.Drug_sensitivity);
+%     Drug_Effect(isnan(Drug_Effect)) = 0;
 
     expression_threshold = 5.5;
     
@@ -236,8 +312,8 @@
     [C2C, NodeWeights] = Construct_C2C(annotations, interactome, 'expression_only', true);
     
        
-%     X = cell2mat(fillinBlanks(Mono.EMax, C2C, D2D));    
-    X = cell2mat(Mono.EMax);    
+    X = cell2mat(fillinBlanks(Mono.EMax, C2C, D2D));    
+%     X = cell2mat(Mono.EMax);    
     X(isempty(X) | isnan(X) | isinf(X)) = 0; 
     X = normalize(X, 'dim', 1);    
 
@@ -257,10 +333,10 @@
 %     Z = Modified_zscore(Z')';
 %     Z(isnan(Z)) = 0;
     outPath = fullfile('output', 'predictions', 'leaderBoard');    
-    exportResults( annotations, Pairs, Pair_names, Z, outPath, 'synergy_threshold', 0.025);
+    exportResults( annotations, Pairs, Pair_names, Z, outPath, 'synergy_threshold', 0.055);
     
-%     ZZ = Z;
-%     ZZ(ZZ < 0.055) = 0;
+    ZZ = Z;
+    ZZ(ZZ < 0.055) = 0;
     %% TODO
     % Drug Effect: Currently EMax, but can be AUC, H, or IC50
     % Expression threshod: currently 3.9, but can vary

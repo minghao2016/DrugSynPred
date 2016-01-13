@@ -15,18 +15,24 @@ function [ Mono ] = read_singleMonoTherapy( annotations, fname )
     [~, Drug_idx_B] = ismember(T.COMPOUND_B, annotations.drugs.ChallengeName);
     for i = 1:size(T, 1)
 
-        if( T.IC50_A(i) < Mono.IC50(CL_idx(i), Drug_idx_A(i)) && Mono.EMax(CL_idx(i), Drug_idx_A(i)) > T.Einf_A(i))
-            Mono.IC50(CL_idx(i), Drug_idx_A(i)) = T.IC50_A(i);
-            Mono.EMax(CL_idx(i), Drug_idx_A(i)) = T.Einf_A(i);
-            Mono.H(CL_idx(i), Drug_idx_A(i)) = T.H_A(i);        
-            Mono.Max_C(CL_idx(i), Drug_idx_A(i)) = T.MAX_CONC_A(i);        
+        if(T.H_A(i) ~= 0 && T.Einf_A(i) ~= 100) % ignore unreliable data-points
+%             if( T.Einf_A(i) < Mono.EMax(CL_idx(i), Drug_idx_A(i)))
+            if( T.IC50_A(i) < Mono.IC50(CL_idx(i), Drug_idx_A(i)) && Mono.EMax(CL_idx(i), Drug_idx_A(i)) > T.Einf_A(i))
+                Mono.IC50(CL_idx(i), Drug_idx_A(i)) = T.IC50_A(i);
+                Mono.EMax(CL_idx(i), Drug_idx_A(i)) = T.Einf_A(i);
+                Mono.H(CL_idx(i), Drug_idx_A(i)) = T.H_A(i);        
+                Mono.Max_C(CL_idx(i), Drug_idx_A(i)) = T.MAX_CONC_A(i);        
+            end
         end
-        if( T.IC50_B(i) < Mono.IC50(CL_idx(i), Drug_idx_B(i)) && Mono.EMax(CL_idx(i), Drug_idx_B(i)) > T.Einf_B(i) )
-            Mono.IC50(CL_idx(i), Drug_idx_B(i)) = T.IC50_B(i);
-            Mono.EMax(CL_idx(i), Drug_idx_B(i)) = T.Einf_B(i);
-            Mono.H(CL_idx(i), Drug_idx_B(i)) = T.H_B(i);        
-            Mono.Max_C(CL_idx(i), Drug_idx_B(i)) = T.MAX_CONC_B(i);        
-        end    
+        if(T.H_B(i) ~= 0 && T.Einf_B(i) ~= 100) % ignore unreliable data-points
+%             if( T.Einf_B(i) < Mono.EMax(CL_idx(i), Drug_idx_B(i)))
+            if( T.IC50_B(i) < Mono.IC50(CL_idx(i), Drug_idx_B(i)) && Mono.EMax(CL_idx(i), Drug_idx_B(i)) > T.Einf_B(i) )
+                Mono.IC50(CL_idx(i), Drug_idx_B(i)) = T.IC50_B(i);
+                Mono.EMax(CL_idx(i), Drug_idx_B(i)) = T.Einf_B(i);
+                Mono.H(CL_idx(i), Drug_idx_B(i)) = T.H_B(i);        
+                Mono.Max_C(CL_idx(i), Drug_idx_B(i)) = T.MAX_CONC_B(i);        
+            end
+        end
     end
 
 
