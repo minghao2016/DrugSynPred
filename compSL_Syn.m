@@ -10,12 +10,20 @@
     annotations.cellLines = annotations.cellLines(CL_perm, :);
 
         %% Read Monotherapy data
-    %     fname = 'input/Dream/synergy/ch2_leaderBoard_monoTherapy.csv';
+%         fname = 'input/Dream/synergy/ch2_leaderBoard_monoTherapy.csv';
         fname = 'input/Dream/synergy/ch1_train_combination_and_monoTherapy.csv';
         [ Mono ] = read_allMonoTherapy( annotations, 'input/Dream/synergy/' ); %TODO: How to optimally combine replicates?
 
 %         [ Mono ] = read_singleMonoTherapy( annotations, fname );
         [Pairs, Pair_names, Pair_synergy, Pair_quality] = readPairs( annotations, fname );
+%%
+%     [ interactome ] = readNetwork();
+   load('datasets', 'interactome');
+    D2D = D2D_combined(annotations, interactome); % Construct_D2D(annotations, interactome);
+    [C2C, NodeWeights] = Construct_C2C(annotations, interactome, 'expression_only', true);    
+    Mono.EMax = fillinBlanks(Mono.EMax, C2C, D2D);
+
+
 %%
 %     [ interactome ] = readNetwork();
 %     D2D = Construct_D2D(annotations, interactome);
@@ -107,12 +115,12 @@
 %%
     % Only works AFTER computing Synergy scores. If we move it to the
     % beginning results are horrible
-    [ interactome ] = readNetwork();
-   load('datasets', 'interactome');
+
 
 %     D2D = D2D_combined(annotations, interactome); % Construct_D2D(annotations, interactome);
 %     [C2C, NodeWeights] = Construct_C2C(annotations, interactome, 'expression_only', true);    
-    X = cell2mat(fillinBlanks(Mono.EMax, C2C, D2D));
+%     X = cell2mat(fillinBlanks(Mono.EMax, C2C, D2D));
+    X = cell2mat(Mono.EMax);
     
     X(isempty(X) | isnan(X) | isinf(X)) = 0; 
     X = normalize(X, 'dim', 1);    
@@ -135,6 +143,8 @@
 
     Z = 30*Z ./ prctile(nonzeros(Z), 95);   
     outPath = fullfile('output', 'predictions', 'leaderBoard');        
-    exportResults( annotations, Pairs, Pair_names, Z, outPath, 'synergy_threshold', 14);
+    exportResults( annotations, Pairs, Pair_names, Z, outPath, 'synergy_threshold', 16);
+
+    
 
     
