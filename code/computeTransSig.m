@@ -1,14 +1,8 @@
-function     [ transcriptional_gene_signature, transc_class_gene_idx, LINCS_genes ] = computeTransSig( annotations, ACSN, varargin)
-    params = inputParser;
-    params.addParamValue('max_iter', 5, @(x) isscalar(x) & x > 0 & x <=1 ); % for double-propagation
-    params.parse(varargin{:});
-    par = params.Results;
-
+function     [ transcriptional_gene_signature, LINCS_genes ] = computeTransSig( annotations)
     
     % TODO: Draft file! CHECK CHECK CHECK, to make sure we selected the best drugs to assay
     LINCS_ds = parse_gct('input/LINCS/final/LINCS_subset.gct');
     LINCS_genes = LINCS_ds.rdesc(:, 7);
-    transc_class_gene_idx = cellfun(@(genes) find(ismember(LINCS_genes, genes)), ACSN.class_genes, 'UniformOutput', false);
 
     LINCS_celllines = LINCS_ds.cdesc(:, 1);
     LINCS_celllines(strcmp(LINCS_celllines, 'BT20')) = {'BT-20'};
@@ -23,7 +17,7 @@ function     [ transcriptional_gene_signature, transc_class_gene_idx, LINCS_gene
     [~, cl_idx] = ismember(LINCS_celllines, annotations.cellLines.Sanger_Name);
 
     % TODO: Check to make sure all ID mappings are correct
-    Dream2LINCS = readtable('./input/LINCS/final/preliminary_mapping.csv');
+    Dream2LINCS = readtable('input/LINCS/final/preliminary_mapping.csv');
     
     transcriptional_gene_signature = cell(size(annotations.drugs, 1), size(annotations.cellLines, 1));
     for i = 1:size(LINCS_expression_matrix, 2)        

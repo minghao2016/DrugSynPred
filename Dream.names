@@ -1,0 +1,18 @@
+Synergy.
+
+Synergy:	0,1.
+MW_1:	continuous.
+MW_2:	continuous.
+HBA_1:	continuous.
+HBA_2:	continuous.
+HBD_1:	continuous.
+HBD_2:	continuous.
+cLogP_1:	continuous.
+cLogP_2:	continuous.
+Lipinski_1:	continuous.
+Lipinski_2:	continuous.
+Drug_sensitivity_1:	continuous.
+Drug_sensitivity_2:	continuous.
+VertSyn_Topo:	continuous.
+VertSyn_Expr:	continuous.
+HorizSyn_Effect:	continuous.

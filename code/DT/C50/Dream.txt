@@ -1,0 +1,113 @@
+
+C5.0 [Release 2.07 GPL Edition]  	Tue Jan 19 05:20:19 2016
+-------------------------------
+
+    Options:
+	Application `Dream'
+	Rule-based classifiers
+	Winnow attributes
+
+Class specified by attribute `Synergy'
+
+Read 4274 cases (16 attributes) from Dream.data
+Read misclassification costs from Dream.costs
+
+No attributes winnowed
+
+Rules:
+
+Rule 1: (38, lift 1.2)
+	VertSyn_Topo > 38.6267
+	VertSyn_Expr <= 0
+	HorizSyn_Effect <= 0.571
+	->  class 0  [0.975]
+
+Rule 2: (24, lift 1.2)
+	VertSyn_Topo > 1.4434
+	HorizSyn_Effect > 0.75614
+	HorizSyn_Effect <= 0.77553
+	->  class 0  [0.962]
+
+Rule 3: (146/16, lift 1.1)
+	VertSyn_Topo > 1.4434
+	VertSyn_Expr > 0.063632
+	HorizSyn_Effect <= 0.75614
+	->  class 0  [0.885]
+
+Rule 4: (191/22, lift 1.1)
+	Lipinski_1 <= 0
+	VertSyn_Topo <= 23.447
+	VertSyn_Expr <= 0.063632
+	HorizSyn_Effect <= 0.11841
+	->  class 0  [0.881]
+
+Rule 5: (939/125, lift 1.1)
+	Lipinski_1 <= 0
+	VertSyn_Topo <= 38.6267
+	VertSyn_Expr <= 0.063632
+	HorizSyn_Effect > 0.11841
+	HorizSyn_Effect <= 0.61544
+	->  class 0  [0.866]
+
+Rule 6: (894/130, lift 1.1)
+	HorizSyn_Effect > 0.77553
+	->  class 0  [0.854]
+
+Rule 7: (3116/516, lift 1.0)
+	VertSyn_Topo <= 1.4434
+	->  class 0  [0.834]
+
+Rule 8: (12, lift 4.8)
+	Lipinski_1 <= 0
+	Drug_sensitivity_2 > 0.99816
+	Drug_sensitivity_2 <= 0.99965
+	VertSyn_Topo <= 1.4434
+	VertSyn_Expr > 0.36812
+	->  class 1  [0.929]
+
+Rule 9: (19/7, lift 3.2)
+	Drug_sensitivity_1 > 0.99688
+	Drug_sensitivity_2 <= 0.99816
+	VertSyn_Topo <= 1.4434
+	VertSyn_Expr > 0.36812
+	->  class 1  [0.619]
+
+Rule 10: (68/36, lift 2.5)
+	HBA_2 <= 5
+	Lipinski_1 > 0
+	->  class 1  [0.471]
+
+Rule 11: (672/436, lift 1.8)
+	VertSyn_Topo > 1.4434
+	VertSyn_Expr <= 0.063632
+	HorizSyn_Effect <= 0.75614
+	->  class 1  [0.352]
+
+Default class: 0
+
+
+Evaluation on training data (4274 cases):
+
+	           Rules         
+	  -----------------------
+	    No      Errors   Cost
+
+	    11  841(19.7%)   0.34   <<
+
+
+	   (a)   (b)    <-classified as
+	  ----  ----
+	  3240   212    (a): class 0
+	   629   193    (b): class 1
+
+
+	Attribute usage:
+
+	     93%  VertSyn_Topo
+	     61%  HorizSyn_Effect
+	     41%  VertSyn_Expr
+	     28%  Lipinski_1
+	      2%  HBA_2
+
+
+Time: 0.2 secs

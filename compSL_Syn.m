@@ -18,99 +18,24 @@
         [Pairs, Pair_names, Pair_synergy, Pair_quality] = readPairs( annotations, fname );
 %%
 %     [ interactome ] = readNetwork();
-   load('datasets', 'interactome');
+    load('datasets', 'interactome');
     D2D = D2D_combined(annotations, interactome); % Construct_D2D(annotations, interactome);
-    [C2C, NodeWeights] = Construct_C2C(annotations, interactome, 'expression_only', true);    
+%     [C2C, NodeWeights] =  Construct_C2C(annotations, interactome, 'expression_only', true);    
+    C2C =  C2C_expr( annotations );
     Mono.EMax = fillinBlanks(Mono.EMax, C2C, D2D);
-
+    
+%%
+    [ VertSyn_Topo ] = computeVertSyn_topo( annotations, interactome, Pairs );
 
 %%
-%     [ interactome ] = readNetwork();
-%     D2D = Construct_D2D(annotations, interactome);
-%     [C2C, NodeWeights] = Construct_C2C(annotations, interactome, 'expression_only', true);    
-%     Mono.EMax = fillinBlanks(Mono.EMax, C2C, D2D);
-        
-%     %%
-%         synergy_threshold = 30;
-%         X = Pair_synergy;
-%         X(isinf(X)) = 0;
-%         [Syn_pair_id, Syn_CL_id, Syn_vv] = find(X);
-%         Syn_drug1 = Pairs(Syn_pair_id, 1);
-%         Syn_drug2 = Pairs(Syn_pair_id, 2);
-%         ck = Syn_CL_id;
-%         Syn_labels = synergy_threshold <= Syn_vv;
-    %
+    [ VertSyn_Expr, VertSyn_Expr_Rest ] = computeVertSyn_expr( annotations, Pairs );
+    
     %%
     Drug_Effect = cell2mat(Mono.EMax);
     Drug_Effect(isnan(Drug_Effect)) = 100;
     Drug_Effect = 100 - Drug_Effect; % effectiveness of drug in cell-lines
     
-    [ Expr_mat, gene_names, expression_threshold ] = ReadExpr( 'Dream', annotations);
-    
-    Vert_compSL_Syn = ones(size(Pairs, 1), 1);
-    for i = 1:size(Pairs, 1)
-        [~, t1_celllines, t1_Effect] = find(Drug_Effect(Pairs(i, 1), :));        
-        t1_targets = annotations.drugs.Target{Pairs(i, 1)};
-        
-        [t1_expr_mask, t1_expr_idx] = ismember(t1_targets, gene_names);     
-        t1_expr_idx(~t1_expr_mask) = [];
-        t1_targets(~t1_expr_mask) = [];
-        
-        
-        [~, t2_celllines, t2_Effect] = find(Drug_Effect(Pairs(i, 2), :));        
-        t2_targets = annotations.drugs.Target{Pairs(i, 2)};
-        
-        [t2_expr_mask, t2_expr_idx] = ismember(t2_targets, gene_names);         
-        t2_expr_idx(~t2_expr_mask) = [];
-        t2_targets(~t2_expr_mask) = [];
-        
-        t2_expr = Expr_mat(t2_expr_idx, t1_celllines);
-        t1_expr = Expr_mat(t1_expr_idx, t2_celllines);
-
-
-
-        idx1 = 0;
-        p1 = ones(numel(t2_targets), 1);
-        for k = 1:size(t2_expr, 1)
-%             if(nnz(SL_net(SL_matches2(k), SL_matches1)) == 0)
-%                 continue;
-%             end
-            idx1 = idx1 + 1;
-            active = t2_expr(k, :) > expression_threshold;
-            if(nnz(active) == 0 || nnz(~active) == 0)
-                continue;
-            end
-                
-            p1(idx1) = ranksum(t1_Effect(active), t1_Effect(~active), 'tail', 'left');
-        end
-        p1_sum = Edgington(p1);
-        
-        idx2 = 0;
-        p2 = ones(numel(t1_targets), 1);
-        for k = 1:size(t1_expr, 1)
-%             if(nnz(SL_net(SL_matches1(k), SL_matches2)) == 0)
-%                 continue;
-%             end
-            idx2 = idx2 + 1;
-            active = t1_expr(k, :) > expression_threshold;
-            if(nnz(active) == 0 || nnz(~active) == 0)
-                continue;
-            end
-                
-%             p2(idx2) = ranksum(t2_Effect(active), t2_Effect(~active), 'tail', 'left');
-            p2(idx2) = ranksum(t2_Effect(active), t2_Effect(~active), 'tail', 'left');
-
-        end
-        p2_sum = Edgington(p2);
-        
-        pval = min(p1_sum, p2_sum);
-%         pval2 = Edgington(x);
-%         y = [sum(x), numel(x), pval, pval2]
-%         pval = Edgington([p1; p2]);
-                
-        Vert_compSL_Syn(i, 1) = pval;        
-    end    
-    Vert_compSL_Syn(Vert_compSL_Syn < 0) = 1;
+    [ Horiz_compSL_Syn ] = computeHorSyn_DrugEffect( annotations, Pairs, Drug_Effect );    
     
 %%
     % Only works AFTER computing Synergy scores. If we move it to the
@@ -125,25 +50,33 @@
     X(isempty(X) | isnan(X) | isinf(X)) = 0; 
     X = normalize(X, 'dim', 1);    
 
-    TT = Vert_compSL_Syn;
-    TT(TT > 0.1) = 0;
+    TT = Horiz_compSL_Syn;
+    TT(TT > 1e-1) = 0;
     V{1} = full(spfun(@(x) -log10(x), TT));
 
-%     V{1} = -log10(Vert_compSL_Syn);
+%     V{1} = -log10(Horiz_compSL_Syn);
     
     Z = zeros(size(Pairs, 1), size(annotations.cellLines, 1));
     for i = 1:size(Pairs, 1)
         for j = 1:size(annotations.cellLines, 1)
-            Z(i, j) = V{1}(i) * (X(Pairs(i, 1), j) * X(Pairs(i, 2), j));
+            Z(i, j) = V{1}(i) * max([X(Pairs(i, 1), j), X(Pairs(i, 2), j)], [], 2);
         end
     end    
 %     Z = Modified_zscore(Z')';
 %     Z(isnan(Z)) = 0;
 %     Z = Z ./ max(nonzeros(Z));
 
-    Z = 30*Z ./ prctile(nonzeros(Z), 95);   
+%     [z, z_idx] = sort(nonzeros(Z));
+%     z_cut = cut(z, 'selection_method', 'participation_ratio_stringent');
+%     z_threshold = z(z_cut);
+
+    z_threshold = 30;
+    Z = 30*Z ./ prctile(nonzeros(Z), 90);
+    ZZ = Z > z_threshold;
+
+
     outPath = fullfile('output', 'predictions', 'leaderBoard');        
-    exportResults( annotations, Pairs, Pair_names, Z, outPath, 'synergy_threshold', 16);
+    exportResults( annotations, Pairs, Pair_names, Z, outPath, 'synergy_threshold', z_threshold);
 
     
 

@@ -1,0 +1,791 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Machine Learning using MATLAB</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-07-18"><meta name="DC.source" content="MachineLearning_small.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Machine Learning using MATLAB</h1><!--introduction--><p>Machine learning techniques are often used for financial analysis and decision-making tasks such as accurate forecasting, classification of risk, estimating probabilities of default, and data mining. However, implementing and comparing different machine learning techniques to choose the best approach can be challenging. Machine learning is synonymous with <b>Non-parametric</b> modeling techniques. The term non-parametric is not meant to imply that such models completely lack parameters but that the number and nature of the parameters are flexible and determined from data.</p><p>In this example, several supervised machine learning techniques available in MATLAB are highlighted. One may apply one or more of the techniques and compare them to determine the most suitable ones for different data sets.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Description of the Data</a></li><li><a href="#2">Import Existing Data</a></li><li><a href="#3">Data Exploration</a></li><li><a href="#4">Convert Categorical Data into Nominal Arrays</a></li><li><a href="#5">Visualize Data</a></li><li><a href="#6">Prepare the Data: Response and Predictors</a></li><li><a href="#7">Cross Validation</a></li><li><a href="#8">Prepare Predictors/Response for Neural Networks</a></li><li><a href="#9">Speed up Computations using Parallel Computing</a></li><li><a href="#10">Neural Networks</a></li><li><a href="#11">Other Machine Learning Techniques</a></li><li><a href="#12">Generalized Linear Model - Logistic Regression</a></li><li><a href="#13">Discriminant Analysis</a></li><li><a href="#14">Classification Using Nearest Neighbors</a></li><li><a href="#15">Naive Bayes Classification</a></li><li><a href="#16">Support Vector Machines</a></li><li><a href="#17">Decision Trees</a></li><li><a href="#18">Ensemble Learning: TreeBagger</a></li><li><a href="#19">Compare Results</a></li><li><a href="#20">ROC Curve for Classification by TreeBagger</a></li><li><a href="#21">Simplify Model - Optional</a></li><li><a href="#22">Estimating a Good Ensemble Size</a></li><li><a href="#23">Estimating Feature Importance</a></li><li><a href="#24">Sequential Feature Selection</a></li><li><a href="#25">TreeBagger with Reduced Feature Set</a></li><li><a href="#26">Compare Results</a></li><li><a href="#27">ROC Curve for Classification by Reduced TreeBagger</a></li><li><a href="#28">Shut Down Workers</a></li><li><a href="#29">References</a></li></ul></div><h2>Description of the Data<a name="1"></a></h2><p>A publicly available dataset is utilized. It's details are described in [Moro et al., 2011]. The data is related with direct marketing campaigns of a Portuguese banking institution. The marketing campaigns were based on phone calls. Often, more than one contact to the same client was required in order to assess if the product (bank term deposit) would be or would not be subscribed.</p><p>The classification goal is to predict if the client will subscribe a term deposit or not (variable y). The data set contains 45211 observations capturing 16 attributes/features.</p><p>Attributes:</p><div><ol><li>age (numeric)</li><li>job : type of job (categorical: "admin.","unknown","unemployed","management","housemaid","entrepreneur","student",  "blue-collar","self-employed","retired","technician","services")</li><li>marital : marital status (categorical: "married","divorced","single"; note: "divorced" means divorced or widowed)</li><li>education (categorical: "unknown","secondary","primary","tertiary")</li><li>default: has credit in default? (binary: "yes","no")</li><li>balance: average yearly balance, in euros (numeric)</li><li>housing: has housing loan? (binary: "yes","no")</li><li>loan: has personal loan? (binary: "yes","no")</li><li>contact: contact communication type (categorical: "unknown","telephone","cellular")</li><li>day: last contact day of the month (numeric)</li><li>month: last contact month of year (categorical: "jan", "feb", "mar", ..., "nov", "dec")</li><li>duration: last contact duration, in seconds (numeric)</li><li>campaign: number of contacts performed during this campaign and for this client (numeric, includes last contact)</li><li>pdays: number of days that passed by after the client was last contacted from a previous campaign (numeric, -1 means client was not previously contacted)</li><li>previous: number of contacts performed before this campaign and for this client (numeric)</li><li>poutcome: outcome of the previous marketing campaign (categorical: "unknown","other","failure","success")</li></ol></div><p>Output variable (desired target):</p><div><ol><li>y: has the client subscribed a term deposit? (binary: "yes","no")</li></ol></div><h2>Import Existing Data<a name="2"></a></h2><p>In this example, the data is loaded from the available CSV-file. One may make use of the interactive tools to load the data and auto-generate the code for the purpose of automation.</p><p>The data is loaded into dataset arrays. Dataset arrays make it easier to work with data of different datatypes to be stored as part of the same matrix.</p><pre class="codeinput"><span class="comment">% Autogenerated code for reading</span>
+bank = ImportBankData(<span class="string">'bank.csv'</span>);
+names = bank.Properties.VarNames;
+</pre><h2>Data Exploration<a name="3"></a></h2><p>One may bring in data from a variety of sources. After that, it is possible to visualize the data, determine interesting patterns (if they exist), build intuition around the data, find outliers or missing information. Many of these typical tasks may be performed interactively.</p><h2>Convert Categorical Data into Nominal Arrays<a name="4"></a></h2><p>Categorical data contains discreet pieces of information, for instance, the attribute, marital status in this dataset. One can open the variable in Variable Editor and convert categorical attributes into nominal arrays using the interactive tools. MATLAB will prompt you with the command in the Command Window.</p><p>Also, dataset arrays allow one to slice the data easily in different ways.</p><pre class="codeinput"><span class="comment">% Remove unnecessary double quotes from certain attributes</span>
+bank = datasetfun(@removequotes,bank,<span class="string">'DatasetOutput'</span>,true);
+
+<span class="comment">% Convert all the categorical variables into nominal arrays</span>
+[nrows, ncols] = size(bank);
+category = false(1,ncols);
+<span class="keyword">for</span> i = 1:ncols
+    <span class="keyword">if</span> isa(bank.(names{i}),<span class="string">'cell'</span>) || isa(bank.(names{i}),<span class="string">'nominal'</span>)
+        category(i) = true;
+        bank.(names{i}) = nominal(bank.(names{i}));
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="comment">% Logical array keeping track of categorical attributes</span>
+catPred = category(1:end-1);
+<span class="comment">% Set the random number seed to make the results repeatable in this script</span>
+rng(<span class="string">'default'</span>);
+</pre><h2>Visualize Data<a name="5"></a></h2><p>One can open the variable <tt>bank</tt>, in the Variable Editor and interactive create different kinds of plots by selecting 1 or more columns.</p><p>As you create the plots, MATLAB tries to help by echoing the commands on to the Command Window.</p><pre class="codeinput"><span class="comment">% Bank balance vs. Last call duration plot, differentiated by outcome of the campaign</span>
+gscatter(bank.balance,bank.duration,bank.y)
+<span class="comment">% Label the plot</span>
+xlabel(<span class="string">'Bank balance'</span>)
+ylabel(<span class="string">'Last contact duration'</span>)
+title(<span class="string">'Outcome'</span>)
+</pre><img vspace="5" hspace="5" src="MachineLearning_small_01.png" alt=""> <h2>Prepare the Data: Response and Predictors<a name="6"></a></h2><p>We can segregate the data into response and predictors. This will make it easier to call subsequent functions which expect the data in this format.</p><pre class="codeinput"><span class="comment">% Response</span>
+Y = bank.y;
+disp(<span class="string">'Marketing Campaign'</span>)
+tabulate(Y)
+<span class="comment">% Predictor matrix</span>
+X = double(bank(:,1:end-1));
+</pre><pre class="codeoutput">Marketing Campaign
+  Value    Count   Percent
+     no     4000     88.48%
+    yes      521     11.52%
+</pre><h2>Cross Validation<a name="7"></a></h2><p>Cross validation is almost an inherent part of machine learning. Cross validation may be used to compare the performance of different predictive modeling techniques. In this example, we use holdout validation. Other techniques including k-fold and leave-one-out cross validation are also available.</p><p>In this example, we partition the data into training set and test set. The training set will be used to calibrate/train the model parameters. The trained model is then used to make a prediction on the test set. Predicted values will be compared with actual data to compute the confusion matrix. Confusion matrix is one way to visualize the performance of a machine learning technique.</p><pre class="codeinput"><span class="comment">% In this example, we will hold 40% of the data, selected randomly, for</span>
+<span class="comment">% test phase.</span>
+cv = cvpartition(length(bank),<span class="string">'holdout'</span>,0.40);
+
+<span class="comment">% Training set</span>
+Xtrain = X(training(cv),:);
+Ytrain = Y(training(cv),:);
+<span class="comment">% Test set</span>
+Xtest = X(test(cv),:);
+Ytest = Y(test(cv),:);
+
+disp(<span class="string">'Training Set'</span>)
+tabulate(Ytrain)
+disp(<span class="string">'Test Set'</span>)
+tabulate(Ytest)
+</pre><pre class="codeoutput">Training Set
+  Value    Count   Percent
+     no     2388     88.02%
+    yes      325     11.98%
+Test Set
+  Value    Count   Percent
+     no     1612     89.16%
+    yes      196     10.84%
+</pre><h2>Prepare Predictors/Response for Neural Networks<a name="8"></a></h2><p>When using neural networks the appropriate way to include categorical predictors is as dummy indicator variables. An indicator variable has values 0 and 1.</p><pre class="codeinput">[XtrainNN, YtrainNN, XtestNN, YtestNN] = preparedataNN(bank, catPred, cv);
+</pre><h2>Speed up Computations using Parallel Computing<a name="9"></a></h2><p>If Parallel Computing Toolbox is available, the computation will be distributed to 2 workers for speeding up the evaluation.</p><pre class="codeinput"><span class="keyword">if</span> matlabpool(<span class="string">'size'</span>) == 0
+    matlabpool <span class="string">open</span> <span class="string">2</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Starting matlabpool using the 'local' profile ... connected to 2 workers.
+</pre><h2>Neural Networks<a name="10"></a></h2><p>Neural Network Toolbox supports supervised learning with feedforward, radial basis, and dynamic networks. It supports both classification and regression algorithms. It also supports unsupervised learning with self-organizing maps and competitive layers.</p><p>One can make use of the interactive tools to setup, train and validate a neural network. It is then possible to auto-generate the code for the purpose of automation. In this example, the auto-generated code has been updated to utilize a pool of workers, if available. This is achieved by simply setting the <i>useParallel</i> flag while making a call to <tt>train</tt>.</p><pre class="language-matlab">[net,~] = train(net,inputs,targets,<span class="string">'useParallel'</span>,<span class="string">'yes'</span>);
+</pre><p>If a GPU is available, it may be utilized by setting the <i>useGPU</i> flag.</p><p>The trained network is used to make a prediction on the test data and confusion matrix is generated for comparison with other techniques.</p><pre class="codeinput"><span class="comment">% Use modified autogenerated code to train the network</span>
+[~, net] = NNfun(XtrainNN,YtrainNN);
+
+<span class="comment">% Make a prediction for the test set</span>
+Y_nn = net(XtestNN');
+Y_nn = round(Y_nn');
+
+<span class="comment">% Compute the confusion matrix</span>
+C_nn = confusionmat(YtestNN,Y_nn);
+<span class="comment">% Examine the confusion matrix for each class as a percentage of the true class</span>
+C_nn = bsxfun(@rdivide,C_nn,sum(C_nn,2)) * 100 <span class="comment">%#ok&lt;*NOPTS&gt;</span>
+</pre><pre class="codeoutput">C_nn =
+       96.774       3.2258
+       69.898       30.102
+</pre><h2>Other Machine Learning Techniques<a name="11"></a></h2><p>Statistics Toolbox features a number of supervised and unsupervised machine learning techniques. It supports both classification and regression algorithms. The supervised learning techniques range from non-linear regression, generalized linear regression, discriminant analysis, SVMs to decision trees and ensemble methods.</p><p>In this example, we make use of some of these techniques to perform predictive modeling. Observe that once the data has been prepared, the syntax to utilize the different modeling techniques is very similar. Most of these techniques can handle categorical predictors. The user can conveniently supply information about different parameters associated with the different algorithms.</p><h2>Generalized Linear Model - Logistic Regression<a name="12"></a></h2><p>In this example, a logistic regression model is leveraged. Response may follow normal, binomial, Poisson, gamma, or inverse Gaussian distribution.</p><p>Since the response in this data set is binary, binomial distribution is suitable.</p><pre class="codeinput"><span class="comment">% Train the classifier</span>
+glm = GeneralizedLinearModel.fit(Xtrain,double(Ytrain)-1,<span class="string">'linear'</span>,<span class="string">'Distribution'</span>,<span class="string">'binomial'</span>,<span class="string">'link'</span>,<span class="string">'logit'</span>,<span class="string">'CategoricalVars'</span>,catPred);
+
+<span class="comment">% Make a prediction for the test set</span>
+Y_glm = glm.predict(Xtest);
+Y_glm = round(Y_glm) + 1;
+
+<span class="comment">% Compute the confusion matrix</span>
+C_glm = confusionmat(double(Ytest),Y_glm);
+<span class="comment">% Examine the confusion matrix for each class as a percentage of the true class</span>
+C_glm = bsxfun(@rdivide,C_glm,sum(C_glm,2)) * 100
+</pre><pre class="codeoutput">C_glm =
+       97.581       2.4194
+       67.857       32.143
+</pre><h2>Discriminant Analysis<a name="13"></a></h2><p>Discriminant analysis is a classification method. It assumes that different classes generate data based on different Gaussian distributions. Linear discriminant analysis is also known as the Fisher discriminant.</p><p>Here, a quadratic discriminant classifier is used.</p><pre class="codeinput"><span class="comment">% Train the classifier</span>
+da = ClassificationDiscriminant.fit(Xtrain,Ytrain,<span class="string">'discrimType'</span>,<span class="string">'quadratic'</span>);
+
+<span class="comment">% Make a prediction for the test set</span>
+Y_da = da.predict(Xtest);
+
+<span class="comment">% Compute the confusion matrix</span>
+C_da = confusionmat(Ytest,Y_da);
+<span class="comment">% Examine the confusion matrix for each class as a percentage of the true class</span>
+C_da = bsxfun(@rdivide,C_da,sum(C_da,2)) * 100
+</pre><pre class="codeoutput">C_da =
+       90.261       9.7395
+       52.551       47.449
+</pre><h2>Classification Using Nearest Neighbors<a name="14"></a></h2><p>Categorizing query points based on their distance to points in a training dataset can be a simple yet effective way of classifying new points. Various distance metrics such as euclidean, correlation, hamming, mahalonobis or your own distance metric may be used.</p><pre class="codeinput"><span class="comment">% Train the classifier</span>
+knn = ClassificationKNN.fit(Xtrain,Ytrain,<span class="string">'Distance'</span>,<span class="string">'seuclidean'</span>);
+
+<span class="comment">% Make a prediction for the test set</span>
+Y_knn = knn.predict(Xtest);
+
+<span class="comment">% Compute the confusion matrix</span>
+C_knn = confusionmat(Ytest,Y_knn);
+<span class="comment">% Examine the confusion matrix for each class as a percentage of the true class</span>
+C_knn = bsxfun(@rdivide,C_knn,sum(C_knn,2)) * 100
+</pre><pre class="codeoutput">C_knn =
+       94.789       5.2109
+       72.449       27.551
+</pre><h2>Naive Bayes Classification<a name="15"></a></h2><p>Naive Bayes classification is based on estimating P(X|Y), the probability or probability density of features X given class Y. The Naive Bayes classification object provides support for normal (Gaussian), kernel, multinomial, and multivariate multinomial distributions</p><pre class="codeinput"><span class="comment">% The multivariate multinomial distribution (_mvmn_) is appropriate for</span>
+<span class="comment">% categorical features</span>
+dist = repmat({<span class="string">'normal'</span>},1,ncols-1);
+dist(catPred) = {<span class="string">'mvmn'</span>};
+
+<span class="comment">% Train the classifier</span>
+Nb = NaiveBayes.fit(Xtrain,Ytrain,<span class="string">'Distribution'</span>,dist);
+
+<span class="comment">% Make a prediction for the test set</span>
+Y_Nb = Nb.predict(Xtest);
+
+<span class="comment">% Compute the confusion matrix</span>
+C_nb = confusionmat(Ytest,Y_Nb);
+<span class="comment">% Examine the confusion matrix for each class as a percentage of the true class</span>
+C_nb = bsxfun(@rdivide,C_nb,sum(C_nb,2)) * 100
+</pre><pre class="codeoutput">C_nb =
+       90.881       9.1191
+           50           50
+</pre><h2>Support Vector Machines<a name="16"></a></h2><p>Support vector machine (SVM) is supported for binary response variables. An SVM classifies data by finding the best hyperplane that separates all data points of one class from those of the other class.</p><pre class="codeinput">opts = statset(<span class="string">'MaxIter'</span>,30000);
+<span class="comment">% Train the classifier</span>
+svmStruct = svmtrain(Xtrain,Ytrain,<span class="string">'kernel_function'</span>,<span class="string">'rbf'</span>,<span class="string">'kktviolationlevel'</span>,0.1,<span class="string">'options'</span>,opts);
+
+<span class="comment">% Make a prediction for the test set</span>
+Y_svm = svmclassify(svmStruct,Xtest);
+C_svm = confusionmat(Ytest,Y_svm);
+<span class="comment">% Examine the confusion matrix for each class as a percentage of the true class</span>
+C_svm = bsxfun(@rdivide,C_svm,sum(C_svm,2)) * 100
+</pre><pre class="codeoutput">C_svm =
+       97.643       2.3573
+       87.755       12.245
+</pre><h2>Decision Trees<a name="17"></a></h2><p>Classification trees and regression trees are two kinds of decision trees. A decision tree is a flow-chart like structure in which internal node represents test on an attribute, each branch represents outcome of test and each leaf node represents a response (decision taken after computing all attributes). Classification trees give responses that are nominal, such as 'true' or 'false'. Regression trees give numeric responses.</p><pre class="codeinput">tic
+<span class="comment">% Train the classifier</span>
+t = ClassificationTree.fit(Xtrain,Ytrain,<span class="string">'CategoricalPredictors'</span>,catPred);
+toc
+
+<span class="comment">% Make a prediction for the test set</span>
+Y_t = t.predict(Xtest);
+
+<span class="comment">% Compute the confusion matrix</span>
+C_t = confusionmat(Ytest,Y_t);
+<span class="comment">% Examine the confusion matrix for each class as a percentage of the true class</span>
+C_t = bsxfun(@rdivide,C_t,sum(C_t,2)) * 100
+</pre><pre class="codeoutput">Elapsed time is 0.441040 seconds.
+C_t =
+        92.68       7.3201
+       59.694       40.306
+</pre><h2>Ensemble Learning: TreeBagger<a name="18"></a></h2><p>Bagging stands for bootstrap aggregation. Every tree in the ensemble is grown on an independently drawn sample of input data. To compute prediction for the ensemble of trees, TreeBagger takes an average of predictions from individual trees (for regression) or takes votes from individual trees (for classification). Ensemble techniques such as bagging combine many weak learners to produce a strong learner.</p><p>From a marketing perspective, as we are creating this predictive model, it may be more important for us to classify <b><i>yes</i></b> correctly than a <b><i>no</i></b>. If that is the case, we can include our opinion using the <i>cost</i> matrix. Here, <i>cost</i> matrix specifies that it is 5 times more costly to classify a <b><i>yes</i></b> as a <b><i>no</i></b>.</p><pre class="codeinput"><span class="comment">% Cost of misclassification</span>
+cost = [0 1
+        5 0];
+opts = statset(<span class="string">'UseParallel'</span>,true);
+<span class="comment">% Train the classifier</span>
+tb = TreeBagger(150,Xtrain,Ytrain,<span class="string">'method'</span>,<span class="string">'classification'</span>,<span class="string">'categorical'</span>,catPred,<span class="string">'Options'</span>,opts,<span class="string">'OOBVarImp'</span>,<span class="string">'on'</span>,<span class="string">'cost'</span>,cost);
+
+<span class="comment">% Make a prediction for the test set</span>
+[Y_tb, classifScore] = tb.predict(Xtest);
+Y_tb = nominal(Y_tb);
+
+<span class="comment">% Compute the confusion matrix</span>
+C_tb = confusionmat(Ytest,Y_tb);
+<span class="comment">% Examine the confusion matrix for each class as a percentage of the true class</span>
+C_tb = bsxfun(@rdivide,C_tb,sum(C_tb,2)) * 100
+</pre><pre class="codeoutput">C_tb =
+        93.61       6.3896
+       51.531       48.469
+</pre><h2>Compare Results<a name="19"></a></h2><p>This visualization function is making use of a couple files downloaded from <a href="http://www.mathworks.com/matlabcentral/">MATLAB Central</a>, the user community website. We are leveraging social computing along the way to help us in our effort.</p><pre class="codeinput">Cmat = [C_nn C_glm C_da C_knn C_nb C_svm C_t C_tb];
+labels = {<span class="string">'Neural Net '</span>, <span class="string">'Logistic Regression '</span>, <span class="string">'Discriminant Analysis '</span>,<span class="keyword">...</span>
+    <span class="string">'k-nearest Neighbors '</span>, <span class="string">'Naive Bayes '</span>, <span class="string">'Support VM '</span>, <span class="string">'Decision Trees '</span>, <span class="string">'TreeBagger '</span>};
+
+comparisonPlot( Cmat, labels )
+</pre><img vspace="5" hspace="5" src="MachineLearning_small_02.png" alt=""> <h2>ROC Curve for Classification by TreeBagger<a name="20"></a></h2><p>Another way of exploring the performance of a classification ensemble is to plot its Receiver Operating Characteristic (ROC) curve.</p><pre class="codeinput">[xx,yy,~,auc] = perfcurve(Ytest, classifScore(:,2),<span class="string">'yes'</span>);
+figure;
+plot(xx,yy)
+xlabel(<span class="string">'False positive rate'</span>);
+ylabel(<span class="string">'True positive rate'</span>)
+title(<span class="string">'ROC curve for ''yes'', predicted vs. actual response (Test Set)'</span>)
+text(0.5,0.25,{<span class="string">'TreeBagger with full feature set'</span>,strcat(<span class="string">'Area Under Curve = '</span>,num2str(auc))},<span class="string">'EdgeColor'</span>,<span class="string">'k'</span>);
+</pre><img vspace="5" hspace="5" src="MachineLearning_small_03.png" alt=""> <h2>Simplify Model - Optional<a name="21"></a></h2><p>One may choose to examine the models further. One may even be able to improve the performance of the models. It is also possible to estimate importance of the different features, reduce the dimensionality of feature set etc.</p><h2>Estimating a Good Ensemble Size<a name="22"></a></h2><p>Examining the out-of-bag error may give an insight into determining a good ensemble size.</p><pre class="codeinput">figure;
+plot(oobError(tb));
+xlabel(<span class="string">'Number of Grown Trees'</span>);
+ylabel(<span class="string">'Out-of-Bag Classification Error/Misclassification Probability'</span>);
+</pre><img vspace="5" hspace="5" src="MachineLearning_small_04.png" alt=""> <h2>Estimating Feature Importance<a name="23"></a></h2><p>Feature importance measures the increase in prediction error if the values of that variable are permuted across the out-of-bag observations. This measure is computed for every tree, then averaged over the entire ensemble and divided by the standard deviation over the entire ensemble.</p><pre class="codeinput">figure;
+bar(tb.OOBPermutedVarDeltaError);
+ylabel(<span class="string">'Out-Of-Bag Feature Importance'</span>);
+set(gca,<span class="string">'XTick'</span>,1:16)
+names2 = names;
+names2{5} = <span class="string">' default'</span>;
+set(gca,<span class="string">'XTickLabel'</span>,names2)
+<span class="comment">% Use file submitted from a user at MATLAB Central to rotate labels</span>
+rotateXLabels( gca, 60 )
+[~,idxvarimp] = sort(tb.OOBPermutedVarDeltaError, <span class="string">'descend'</span>);
+</pre><img vspace="5" hspace="5" src="MachineLearning_small_05.png" alt=""> <h2>Sequential Feature Selection<a name="24"></a></h2><p>Feature selection reduces the dimensionality of data by selecting only a subset of measured features (predictor variables) to create a model. Selection criteria involves the minimization of a specific measure of predictive error for models fit to different subsets.</p><p>Sequential feature selection can be computationally intensive. It can benefit significantly from parallel computing.</p><pre class="codeinput">opts = statset(<span class="string">'UseParallel'</span>,true);
+critfun = @(Xtr,Ytr,Xte,Yte)featureImp(Xtr,Ytr,Xte,Yte,<span class="string">'TreeBagger'</span>);
+<span class="comment">% The top 5 features determined in the previous step have been included,</span>
+<span class="comment">% to reduce the number of combinations to be tried by sequentialfs</span>
+[fs,history] = sequentialfs(critfun,Xtrain,Ytrain,<span class="string">'options'</span>,opts,<span class="string">'keepin'</span>,idxvarimp(1:5));
+disp(<span class="string">'Included features:'</span>);
+disp(names(fs)');
+</pre><pre class="codeoutput">Included features:
+    'education'
+    'default'
+    'housing'
+    'contact'
+    'month'
+    'duration'
+    'pdays'
+    'previous'
+    'poutcome'
+</pre><h2>TreeBagger with Reduced Feature Set<a name="25"></a></h2><pre class="codeinput">opts = statset(<span class="string">'UseParallel'</span>,true);
+tb_r = TreeBagger(120, Xtrain(:,fs),Ytrain,<span class="string">'method'</span>,<span class="string">'classification'</span>,<span class="string">'categorical'</span>,catPred(:,fs),<span class="string">'Options'</span>,opts,<span class="string">'cost'</span>,cost);
+[Y_tb_r, classifScore] = tb_r.predict(Xtest(:,fs));
+Y_tb_r = nominal(Y_tb_r);
+C_tb_r = confusionmat(Ytest,Y_tb_r);
+C_tb_r = bsxfun(@rdivide,C_tb_r,sum(C_tb_r,2)) * 100
+</pre><pre class="codeoutput">C_tb_r =
+       84.057       15.943
+       28.571       71.429
+</pre><h2>Compare Results<a name="26"></a></h2><pre class="codeinput">Cmat = [C_nn C_glm C_da C_knn C_nb C_svm C_t C_tb C_tb_r];
+labels = {<span class="string">'Neural Net '</span>, <span class="string">'Logistic Regression '</span>, <span class="string">'Discriminant Analysis '</span>,<span class="keyword">...</span>
+    <span class="string">'k-nearest Neighbors '</span>, <span class="string">'Naive Bayes '</span>, <span class="string">'Support VM '</span>, <span class="string">'Decision Trees '</span>, <span class="string">'TreeBagger '</span>, <span class="string">'Reduced TB '</span>};
+
+comparisonPlot( Cmat, labels )
+</pre><img vspace="5" hspace="5" src="MachineLearning_small_06.png" alt=""> <h2>ROC Curve for Classification by Reduced TreeBagger<a name="27"></a></h2><pre class="codeinput">[xx,yy,~,auc] = perfcurve(Ytest, classifScore(:,2),<span class="string">'yes'</span>);
+figure;
+plot(xx,yy)
+xlabel(<span class="string">'False positive rate'</span>);
+ylabel(<span class="string">'True positive rate'</span>)
+title(<span class="string">'ROC curve for ''yes'', predicted vs. actual response (Test Set)'</span>)
+text(0.5,0.25,{<span class="string">'TreeBagger with reduced feature set'</span>,strcat(<span class="string">'Area Under Curve = '</span>,num2str(auc))},<span class="string">'EdgeColor'</span>,<span class="string">'k'</span>);
+</pre><img vspace="5" hspace="5" src="MachineLearning_small_07.png" alt=""> <h2>Shut Down Workers<a name="28"></a></h2><p>Release the workers if there is no more work for them</p><pre class="codeinput"><span class="keyword">if</span> matlabpool(<span class="string">'size'</span>) &gt; 0
+    matlabpool <span class="string">close</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Sending a stop signal to all the workers ... stopped.
+</pre><h2>References<a name="29"></a></h2><div><ol><li>[Moro et al., 2011] S. Moro, R. Laureano and P. Cortez. Using Data Mining for Bank Direct Marketing: An Application of the CRISP-DM Methodology.   In P. Novais et al. (Eds.), Proceedings of the European Simulation and Modelling Conference - ESM'2011, pp. 117-121, Guimar&Atilde;&pound;es, Portugal, October, 2011. EUROSIS.</li></ol></div><p class="footer">Copyright 2013 The MathWorks, Inc.<br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Machine Learning using MATLAB
+% Machine learning techniques are often used for financial analysis and
+% decision-making tasks such as accurate forecasting, classification of
+% risk, estimating probabilities of default, and data mining. However,
+% implementing and comparing different machine learning techniques to
+% choose the best approach can be challenging. Machine learning is
+% synonymous with *Non-parametric* modeling techniques. The term
+% non-parametric is not meant to imply that such models completely lack
+% parameters but that the number and nature of the parameters are flexible
+% and determined from data.
+% 
+% In this example, several supervised machine learning techniques available
+% in MATLAB are highlighted. One may apply one or more of the techniques
+% and compare them to determine the most suitable ones for different data
+% sets.
+
+% Copyright 2013 The MathWorks, Inc.
+
+%% Description of the Data
+% A publicly available dataset is utilized. It's details are described in
+% [Moro et al., 2011]. The data is related with direct marketing campaigns
+% of a Portuguese banking institution. The marketing campaigns were based
+% on phone calls. Often, more than one contact to the same client was
+% required in order to assess if the product (bank term deposit) would be
+% or would not be subscribed.
+% 
+% The classification goal is to predict if the client will subscribe a term
+% deposit or not (variable y). The data set contains 45211 observations
+% capturing 16 attributes/features.
+% 
+% Attributes:
+% 
+% # age (numeric)
+% # job : type of job (categorical: "admin.","unknown","unemployed","management","housemaid","entrepreneur","student",
+%  "blue-collar","self-employed","retired","technician","services") 
+% # marital : marital status (categorical: "married","divorced","single"; note: "divorced" means divorced or widowed)
+% # education (categorical: "unknown","secondary","primary","tertiary")
+% # default: has credit in default? (binary: "yes","no")
+% # balance: average yearly balance, in euros (numeric) 
+% # housing: has housing loan? (binary: "yes","no")
+% # loan: has personal loan? (binary: "yes","no")
+% # contact: contact communication type (categorical: "unknown","telephone","cellular") 
+% # day: last contact day of the month (numeric)
+% # month: last contact month of year (categorical: "jan", "feb", "mar", ..., "nov", "dec")
+% # duration: last contact duration, in seconds (numeric)
+% # campaign: number of contacts performed during this campaign and for this client (numeric, includes last contact)
+% # pdays: number of days that passed by after the client was last contacted from a previous campaign (numeric, -1 means client was not previously contacted)
+% # previous: number of contacts performed before this campaign and for this client (numeric)
+% # poutcome: outcome of the previous marketing campaign (categorical: "unknown","other","failure","success")
+% 
+% Output variable (desired target):
+% 
+% # y: has the client subscribed a term deposit? (binary: "yes","no")
+
+%% Import Existing Data
+% In this example, the data is loaded from the available CSV-file. One may
+% make use of the interactive tools to load the data and auto-generate the
+% code for the purpose of automation.
+% 
+% The data is loaded into dataset arrays. Dataset arrays make it easier to
+% work with data of different datatypes to be stored as part of the same
+% matrix.
+
+% Autogenerated code for reading
+bank = ImportBankData('bank.csv');
+names = bank.Properties.VarNames;
+
+%% Data Exploration
+% One may bring in data from a variety of sources. After that, it is
+% possible to visualize the data, determine interesting patterns (if they
+% exist), build intuition around the data, find outliers or missing
+% information. Many of these typical tasks may be performed interactively.
+
+%% Convert Categorical Data into Nominal Arrays
+% Categorical data contains discreet pieces of information, for instance,
+% the attribute, marital status in this dataset. One can open the variable
+% in Variable Editor and convert categorical attributes into nominal arrays
+% using the interactive tools. MATLAB will prompt you with the command in
+% the Command Window.
+% 
+% Also, dataset arrays allow one to slice the data easily in different
+% ways.
+
+% Remove unnecessary double quotes from certain attributes
+bank = datasetfun(@removequotes,bank,'DatasetOutput',true);
+
+% Convert all the categorical variables into nominal arrays
+[nrows, ncols] = size(bank);
+category = false(1,ncols);
+for i = 1:ncols
+    if isa(bank.(names{i}),'cell') || isa(bank.(names{i}),'nominal')
+        category(i) = true;
+        bank.(names{i}) = nominal(bank.(names{i}));
+    end
+end
+% Logical array keeping track of categorical attributes
+catPred = category(1:end-1);
+% Set the random number seed to make the results repeatable in this script
+rng('default');
+
+%% Visualize Data
+% One can open the variable |bank|, in the Variable Editor and interactive
+% create different kinds of plots by selecting 1 or more columns.
+% 
+% As you create the plots, MATLAB tries to help by echoing the commands on
+% to the Command Window.
+
+% Bank balance vs. Last call duration plot, differentiated by outcome of the campaign
+gscatter(bank.balance,bank.duration,bank.y)
+% Label the plot
+xlabel('Bank balance')
+ylabel('Last contact duration')
+title('Outcome')
+
+%% Prepare the Data: Response and Predictors
+% We can segregate the data into response and predictors. This will make it
+% easier to call subsequent functions which expect the data in this format.
+
+% Response
+Y = bank.y;
+disp('Marketing Campaign')
+tabulate(Y)
+% Predictor matrix
+X = double(bank(:,1:end-1));
+
+%% Cross Validation
+% Cross validation is almost an inherent part of machine learning. Cross
+% validation may be used to compare the performance of different predictive
+% modeling techniques. In this example, we use holdout validation. Other
+% techniques including k-fold and leave-one-out cross validation are also
+% available.
+% 
+% In this example, we partition the data into training set and test set.
+% The training set will be used to calibrate/train the model parameters.
+% The trained model is then used to make a prediction on the test set.
+% Predicted values will be compared with actual data to compute the
+% confusion matrix. Confusion matrix is one way to visualize the
+% performance of a machine learning technique.
+
+% In this example, we will hold 40% of the data, selected randomly, for
+% test phase.
+cv = cvpartition(length(bank),'holdout',0.40);
+
+% Training set
+Xtrain = X(training(cv),:);
+Ytrain = Y(training(cv),:);
+% Test set
+Xtest = X(test(cv),:);
+Ytest = Y(test(cv),:);
+
+disp('Training Set')
+tabulate(Ytrain)
+disp('Test Set')
+tabulate(Ytest)
+
+%% Prepare Predictors/Response for Neural Networks
+% When using neural networks the appropriate way to include categorical
+% predictors is as dummy indicator variables. An indicator variable has
+% values 0 and 1.
+
+[XtrainNN, YtrainNN, XtestNN, YtestNN] = preparedataNN(bank, catPred, cv);
+
+%% Speed up Computations using Parallel Computing
+% If Parallel Computing Toolbox is available, the computation will be
+% distributed to 2 workers for speeding up the evaluation.
+
+if matlabpool('size') == 0 
+    matlabpool open 2
+end
+
+%% Neural Networks
+% Neural Network Toolbox supports supervised learning with feedforward,
+% radial basis, and dynamic networks. It supports both classification and
+% regression algorithms. It also supports unsupervised learning with
+% self-organizing maps and competitive layers.
+% 
+% One can make use of the interactive tools to setup, train and validate a
+% neural network. It is then possible to auto-generate the code for the
+% purpose of automation. In this example, the auto-generated code has been
+% updated to utilize a pool of workers, if available. This is achieved by
+% simply setting the _useParallel_ flag while making a call to |train|.
+% 
+%   [net,~] = train(net,inputs,targets,'useParallel','yes');
+% 
+% If a GPU is available, it may be utilized by setting the _useGPU_ flag.
+% 
+% The trained network is used to make a prediction on the test data and
+% confusion matrix is generated for comparison with other techniques.
+
+% Use modified autogenerated code to train the network
+[~, net] = NNfun(XtrainNN,YtrainNN);
+
+% Make a prediction for the test set
+Y_nn = net(XtestNN');
+Y_nn = round(Y_nn');
+
+% Compute the confusion matrix
+C_nn = confusionmat(YtestNN,Y_nn);
+% Examine the confusion matrix for each class as a percentage of the true class
+C_nn = bsxfun(@rdivide,C_nn,sum(C_nn,2)) * 100 %#ok<*NOPTS>
+
+%% Other Machine Learning Techniques
+% Statistics Toolbox features a number of supervised and unsupervised
+% machine learning techniques. It supports both classification and
+% regression algorithms. The supervised learning techniques range from
+% non-linear regression, generalized linear regression, discriminant
+% analysis, SVMs to decision trees and ensemble methods.
+% 
+% In this example, we make use of some of these techniques to perform
+% predictive modeling. Observe that once the data has been prepared, the
+% syntax to utilize the different modeling techniques is very similar. Most
+% of these techniques can handle categorical predictors. The user can
+% conveniently supply information about different parameters associated
+% with the different algorithms.
+
+%% Generalized Linear Model - Logistic Regression
+% In this example, a logistic regression model is leveraged. Response may
+% follow normal, binomial, Poisson, gamma, or inverse Gaussian
+% distribution. 
+% 
+% Since the response in this data set is binary, binomial distribution is
+% suitable.
+
+% Train the classifier
+glm = GeneralizedLinearModel.fit(Xtrain,double(Ytrain)-1,'linear','Distribution','binomial','link','logit','CategoricalVars',catPred);
+
+% Make a prediction for the test set
+Y_glm = glm.predict(Xtest);
+Y_glm = round(Y_glm) + 1;
+
+% Compute the confusion matrix
+C_glm = confusionmat(double(Ytest),Y_glm);
+% Examine the confusion matrix for each class as a percentage of the true class
+C_glm = bsxfun(@rdivide,C_glm,sum(C_glm,2)) * 100
+
+%% Discriminant Analysis
+% Discriminant analysis is a classification method. It assumes that
+% different classes generate data based on different Gaussian
+% distributions. Linear discriminant analysis is also known as the Fisher
+% discriminant. 
+% 
+% Here, a quadratic discriminant classifier is used.
+
+% Train the classifier
+da = ClassificationDiscriminant.fit(Xtrain,Ytrain,'discrimType','quadratic');
+
+% Make a prediction for the test set
+Y_da = da.predict(Xtest);
+
+% Compute the confusion matrix
+C_da = confusionmat(Ytest,Y_da);
+% Examine the confusion matrix for each class as a percentage of the true class
+C_da = bsxfun(@rdivide,C_da,sum(C_da,2)) * 100
+
+%% Classification Using Nearest Neighbors
+% Categorizing query points based on their distance to points in a training
+% dataset can be a simple yet effective way of classifying new points.
+% Various distance metrics such as euclidean, correlation, hamming,
+% mahalonobis or your own distance metric may be used.
+
+% Train the classifier
+knn = ClassificationKNN.fit(Xtrain,Ytrain,'Distance','seuclidean');
+
+% Make a prediction for the test set
+Y_knn = knn.predict(Xtest);
+
+% Compute the confusion matrix
+C_knn = confusionmat(Ytest,Y_knn);
+% Examine the confusion matrix for each class as a percentage of the true class
+C_knn = bsxfun(@rdivide,C_knn,sum(C_knn,2)) * 100
+
+%% Naive Bayes Classification
+% Naive Bayes classification is based on estimating P(X|Y), the probability
+% or probability density of features X given class Y. The Naive Bayes
+% classification object provides support for normal (Gaussian), kernel,
+% multinomial, and multivariate multinomial distributions
+
+% The multivariate multinomial distribution (_mvmn_) is appropriate for
+% categorical features
+dist = repmat({'normal'},1,ncols-1);
+dist(catPred) = {'mvmn'};
+
+% Train the classifier
+Nb = NaiveBayes.fit(Xtrain,Ytrain,'Distribution',dist);
+
+% Make a prediction for the test set
+Y_Nb = Nb.predict(Xtest);
+
+% Compute the confusion matrix
+C_nb = confusionmat(Ytest,Y_Nb);
+% Examine the confusion matrix for each class as a percentage of the true class
+C_nb = bsxfun(@rdivide,C_nb,sum(C_nb,2)) * 100
+
+%% Support Vector Machines
+% Support vector machine (SVM) is supported for binary response variables.
+% An SVM classifies data by finding the best hyperplane that separates all
+% data points of one class from those of the other class.
+
+opts = statset('MaxIter',30000);
+% Train the classifier
+svmStruct = svmtrain(Xtrain,Ytrain,'kernel_function','rbf','kktviolationlevel',0.1,'options',opts);
+
+% Make a prediction for the test set
+Y_svm = svmclassify(svmStruct,Xtest);
+C_svm = confusionmat(Ytest,Y_svm);
+% Examine the confusion matrix for each class as a percentage of the true class
+C_svm = bsxfun(@rdivide,C_svm,sum(C_svm,2)) * 100
+
+%% Decision Trees
+% Classification trees and regression trees are two kinds of decision
+% trees. A decision tree is a flow-chart like structure in which internal
+% node represents test on an attribute, each branch represents outcome of
+% test and each leaf node represents a response (decision taken after
+% computing all attributes). Classification trees give responses that are
+% nominal, such as 'true' or 'false'. Regression trees give numeric
+% responses.
+
+tic
+% Train the classifier
+t = ClassificationTree.fit(Xtrain,Ytrain,'CategoricalPredictors',catPred);
+toc
+
+% Make a prediction for the test set
+Y_t = t.predict(Xtest);
+
+% Compute the confusion matrix
+C_t = confusionmat(Ytest,Y_t);
+% Examine the confusion matrix for each class as a percentage of the true class
+C_t = bsxfun(@rdivide,C_t,sum(C_t,2)) * 100
+
+%% Ensemble Learning: TreeBagger
+% Bagging stands for bootstrap aggregation. Every tree in the ensemble is
+% grown on an independently drawn sample of input data. To compute
+% prediction for the ensemble of trees, TreeBagger takes an average of
+% predictions from individual trees (for regression) or takes votes from
+% individual trees (for classification). Ensemble techniques such as
+% bagging combine many weak learners to produce a strong learner.
+% 
+% From a marketing perspective, as we are creating this predictive model,
+% it may be more important for us to classify *_yes_* correctly than a
+% *_no_*. If that is the case, we can include our opinion using the _cost_
+% matrix. Here, _cost_ matrix specifies that it is 5 times more costly to
+% classify a *_yes_* as a *_no_*.
+
+% Cost of misclassification
+cost = [0 1
+        5 0];
+opts = statset('UseParallel',true);
+% Train the classifier
+tb = TreeBagger(150,Xtrain,Ytrain,'method','classification','categorical',catPred,'Options',opts,'OOBVarImp','on','cost',cost);
+
+% Make a prediction for the test set
+[Y_tb, classifScore] = tb.predict(Xtest);
+Y_tb = nominal(Y_tb);
+
+% Compute the confusion matrix
+C_tb = confusionmat(Ytest,Y_tb);
+% Examine the confusion matrix for each class as a percentage of the true class
+C_tb = bsxfun(@rdivide,C_tb,sum(C_tb,2)) * 100
+
+%% Compare Results
+% This visualization function is making use of a couple files downloaded
+% from <http://www.mathworks.com/matlabcentral/ MATLAB Central>, the user
+% community website. We are leveraging social computing along the way to
+% help us in our effort.
+
+Cmat = [C_nn C_glm C_da C_knn C_nb C_svm C_t C_tb];
+labels = {'Neural Net ', 'Logistic Regression ', 'Discriminant Analysis ',...
+    'k-nearest Neighbors ', 'Naive Bayes ', 'Support VM ', 'Decision Trees ', 'TreeBagger '};
+
+comparisonPlot( Cmat, labels )
+
+%% ROC Curve for Classification by TreeBagger
+% Another way of exploring the performance of a classification ensemble is
+% to plot its Receiver Operating Characteristic (ROC) curve.
+
+[xx,yy,~,auc] = perfcurve(Ytest, classifScore(:,2),'yes');
+figure;
+plot(xx,yy)
+xlabel('False positive rate');
+ylabel('True positive rate')
+title('ROC curve for ''yes'', predicted vs. actual response (Test Set)')
+text(0.5,0.25,{'TreeBagger with full feature set',strcat('Area Under Curve = ',num2str(auc))},'EdgeColor','k');
+
+%% Simplify Model - Optional
+% One may choose to examine the models further. One may even be able to
+% improve the performance of the models. It is also possible to estimate
+% importance of the different features, reduce the dimensionality of
+% feature set etc.
+
+%% Estimating a Good Ensemble Size
+% Examining the out-of-bag error may give an insight into determining a
+% good ensemble size. 
+
+figure;
+plot(oobError(tb));
+xlabel('Number of Grown Trees');
+ylabel('Out-of-Bag Classification Error/Misclassification Probability');
+
+%% Estimating Feature Importance
+% Feature importance measures the increase in prediction error if the
+% values of that variable are permuted across the out-of-bag observations.
+% This measure is computed for every tree, then averaged over the entire
+% ensemble and divided by the standard deviation over the entire ensemble.
+
+figure;
+bar(tb.OOBPermutedVarDeltaError);
+ylabel('Out-Of-Bag Feature Importance');
+set(gca,'XTick',1:16)
+names2 = names;
+names2{5} = ' default';
+set(gca,'XTickLabel',names2)
+% Use file submitted from a user at MATLAB Central to rotate labels
+rotateXLabels( gca, 60 )
+[~,idxvarimp] = sort(tb.OOBPermutedVarDeltaError, 'descend');
+
+%% Sequential Feature Selection
+% Feature selection reduces the dimensionality of data by selecting only a
+% subset of measured features (predictor variables) to create a model.
+% Selection criteria involves the minimization of a specific measure of
+% predictive error for models fit to different subsets.
+% 
+% Sequential feature selection can be computationally intensive. It can
+% benefit significantly from parallel computing.
+
+opts = statset('UseParallel',true);
+critfun = @(Xtr,Ytr,Xte,Yte)featureImp(Xtr,Ytr,Xte,Yte,'TreeBagger');
+% The top 5 features determined in the previous step have been included,
+% to reduce the number of combinations to be tried by sequentialfs
+[fs,history] = sequentialfs(critfun,Xtrain,Ytrain,'options',opts,'keepin',idxvarimp(1:5));
+disp('Included features:');
+disp(names(fs)');
+
+%% TreeBagger with Reduced Feature Set
+
+opts = statset('UseParallel',true);
+tb_r = TreeBagger(120, Xtrain(:,fs),Ytrain,'method','classification','categorical',catPred(:,fs),'Options',opts,'cost',cost);
+[Y_tb_r, classifScore] = tb_r.predict(Xtest(:,fs));
+Y_tb_r = nominal(Y_tb_r);
+C_tb_r = confusionmat(Ytest,Y_tb_r);
+C_tb_r = bsxfun(@rdivide,C_tb_r,sum(C_tb_r,2)) * 100
+
+%% Compare Results
+
+Cmat = [C_nn C_glm C_da C_knn C_nb C_svm C_t C_tb C_tb_r];
+labels = {'Neural Net ', 'Logistic Regression ', 'Discriminant Analysis ',...
+    'k-nearest Neighbors ', 'Naive Bayes ', 'Support VM ', 'Decision Trees ', 'TreeBagger ', 'Reduced TB '};
+
+comparisonPlot( Cmat, labels )
+
+%% ROC Curve for Classification by Reduced TreeBagger
+
+[xx,yy,~,auc] = perfcurve(Ytest, classifScore(:,2),'yes');
+figure;
+plot(xx,yy)
+xlabel('False positive rate'); 
+ylabel('True positive rate')
+title('ROC curve for ''yes'', predicted vs. actual response (Test Set)')
+text(0.5,0.25,{'TreeBagger with reduced feature set',strcat('Area Under Curve = ',num2str(auc))},'EdgeColor','k');
+
+%% Shut Down Workers
+% Release the workers if there is no more work for them
+
+if matlabpool('size') > 0
+    matlabpool close
+end
+%% References
+% # [Moro et al., 2011] S. Moro, R. Laureano and P. Cortez. Using Data Mining for Bank Direct Marketing: An Application of the CRISP-DM Methodology. 
+%   In P. Novais et al. (Eds.), Proceedings of the European Simulation and Modelling Conference - ESM'2011, pp. 117-121, GuimarÃ£es, Portugal, October, 2011. EUROSIS.
+
+##### SOURCE END #####
+--></body></html>
